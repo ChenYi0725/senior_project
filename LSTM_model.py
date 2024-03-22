@@ -42,9 +42,9 @@ downData = np.array(downData)
 stopData = np.array(stopData)
 leftData = np.array(leftData)
 
-downData = organizer.getRelativeWithFirstTimeStep(downData)
-stopData = organizer.getRelativeWithFirstTimeStep(stopData)
-leftData = organizer.getRelativeWithFirstTimeStep(leftData)
+downData = organizer.getRelativeLocation(downData)
+stopData = organizer.getRelativeLocation(stopData)
+leftData = organizer.getRelativeLocation(leftData)
 # data格式 eg.[3][2][1]三個樣本 兩個時間步長 一個特徵點
 data = np.concatenate((stopData, downData, leftData), axis=0)
 
@@ -60,7 +60,7 @@ print("=====================")
 model = Sequential()
 model.add(
     LSTM(
-        150,
+        243,
         activation="relu",
         input_shape=(21, 42),  # 21,42
         kernel_regularizer=regularizers.l2(0.01),
@@ -73,7 +73,11 @@ model.compile(
 )
 
 weights = model.layers[0].get_weights()  # 改食指權重
+# weights[0] 為權重矩陣
+weights[0][:, 0:12] *= 0
+weights[0][:, 18:42] *= 0
 weights[0][:, 12:18] *= 2.0
+print(f"weight{weights}")
 model.layers[0].set_weights(weights)
 # model.compile(optimizer="adam", loss=myLossFunction, metrics=["accuracy"])
 # model.add(Dense(1))  # 全連接層，輸出1個值
@@ -81,7 +85,7 @@ model.layers[0].set_weights(weights)
 # model.compile(optimizer="adam", loss=myLossFunction)
 # ===========================================
 # 訓練模型
-model.fit(data, target, epochs=500, batch_size=32, verbose=2)
+model.fit(data, target, epochs=650, batch_size=32, verbose=2)
 
 loss = model.evaluate(data, target)
 
@@ -123,4 +127,4 @@ print("loss:", loss)
 #     print(f"result:{predictedResult},answer:2")
 # print("done")
 
-model.save("lstm_hand_model.h5")
+model.save("lstm_hand_model.keras")

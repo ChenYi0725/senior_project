@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+import data_oranizer as do
 import camera
 import threading
 import recorder as rd
@@ -15,8 +16,8 @@ currentFeatute = []
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
-
-lstmModel = load_model("lstm_hand_model.h5")
+organizer = do.DataOrganizer()
+lstmModel = load_model("lstm_hand_model.keras")
 
 recorder = rd.Recorder()
 frameReceiver = camera.Camera()
@@ -52,13 +53,20 @@ def drawResultOnImage(image, result):
     return image
 
 
+def decodeResult(result):
+    decodedResult = []
+    return decodedResult
+
+
 def getContinuousFeature(currentFeature, image):
+    global continuousFeature
     if len(continuousFeature) < 21:
         continuousFeature.append(currentFeature)
     else:
         del continuousFeature[0]
         continuousFeature.append(currentFeature)
         predictData = np.array([continuousFeature])
+        predictData = organizer.getRelativeLocation(predictData)
         prediction = lstmModel.predict(predictData)
         predictedResult = np.argmax(prediction, axis=1)
         image = drawResultOnImage(image=image, result=predictedResult)

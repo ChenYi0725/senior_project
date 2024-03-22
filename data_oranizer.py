@@ -43,6 +43,15 @@ class DataOrganizer:
         result = eval(content)
         return result
 
+    def getAccelerate(self, npArray):
+        for i in range(len(npArray)):
+            for j in reversed(range(len(npArray[i]))):
+                for k in reversed(range(len(npArray[i][j]))):
+                    if not j < 1:
+                        npArray[i][j][k] = npArray[i][j][k] - npArray[i][j - 1][k]
+        npArray = self.cutFirstTimeStep(npArray)
+        return npArray
+
     # def cutInhomogeneousData(self,inputList, size):
     #     for j in range(len(inputList)):
     #         if j == len(inputList):
