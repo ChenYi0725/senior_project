@@ -54,7 +54,12 @@ def drawResultOnImage(image, result):
 
 
 def decodeResult(result):
-    decodedResult = []
+    if result[0] == 0:
+        decodedResult = "stop"
+    elif result[0] == 1:
+        decodedResult = "down"
+    else:
+        decodedResult = "left"
     return decodedResult
 
 
@@ -69,7 +74,7 @@ def getContinuousFeature(currentFeature, image):
         predictData = organizer.getRelativeLocation(predictData)
         prediction = lstmModel.predict(predictData)
         predictedResult = np.argmax(prediction, axis=1)
-        image = drawResultOnImage(image=image, result=predictedResult)
+        image = drawResultOnImage(image=image, result=decodeResult(predictedResult))
         # os.system("cls")
         # print(predictedResult)
 
