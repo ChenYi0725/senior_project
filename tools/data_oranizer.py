@@ -1,11 +1,5 @@
 import numpy as np
 
-test = np.array(
-    [
-        [[1, 2, 4, 97], [10, 28, 38, 35], [49, -84, -23, 66]],
-        [[82, 55, 88, 72], [46, 42, 99, -98], [87, 23, 78, 28]],
-    ]
-)
 
 class DataOrganizer:
     def cutFirstTimeStep(self, npArray):
@@ -50,4 +44,18 @@ class DataOrganizer:
                         npArray[i][j][k] = npArray[i][j][k] - npArray[i][j - 1][k]
         npArray = self.cutFirstTimeStep(npArray)
         return npArray
+
+    def checkData(self, fileName):
+        targetFile = self.getDataFromTxt(fileName)
+        errorList = []
+        for i in range(len(targetFile)):
+            if not len(targetFile[i]) == 21:
+                errorList.append(i)
+                continue
+            for j in range(len(targetFile[i])):
+                if not len(targetFile[i][j]) == 84:
+                    errorList.append(i)
+        return errorList
+
+
 

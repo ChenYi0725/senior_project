@@ -28,9 +28,9 @@ def myLossFunction(y_true, y_pred):
 
 
 organizer = do.DataOrganizer()
-downData = organizer.getDataFromTxt("down_data")
-stopData = organizer.getDataFromTxt("stop_data")
-leftData = organizer.getDataFromTxt("left_data")
+downData = organizer.getDataFromTxt("old_1hand_data/down_data")
+stopData = organizer.getDataFromTxt("old_1hand_data/stop_data")
+leftData = organizer.getDataFromTxt("old_1hand_data/left_data")
 
 
 print(f"down:{len(downData)}")
