@@ -43,7 +43,3 @@ class Camera:
     def BGRToRGB(self, image):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image
-
-    # def flipHorizontal(image):
-    #     image = cv2.flip(image, 1)
-    #     return image

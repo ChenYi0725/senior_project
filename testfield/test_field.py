@@ -1,7 +1,7 @@
 import cv2
 import mediapipe as mp
-import camera
-import recorder as rd
+import tools.camera as camera
+import tools.recorder as rd
 import time
 import os
 

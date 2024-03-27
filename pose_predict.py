@@ -1,10 +1,10 @@
 import cv2
 import mediapipe as mp
 import numpy as np
-import data_oranizer as do
-import camera
+import tools.data_oranizer as do
+import tools.camera as camera
 import threading
-import recorder as rd
+import tools.recorder as rd
 import time
 import os
 from keras.models import load_model
@@ -75,11 +75,6 @@ def getContinuousFeature(currentFeature, image):
         prediction = lstmModel.predict(predictData)
         predictedResult = np.argmax(prediction, axis=1)
         image = drawResultOnImage(image=image, result=decodeResult(predictedResult))
-        # os.system("cls")
-        # print(predictedResult)
-
-    # print(len(continuousFeature))
-    # return continuousFeature
     return image
 
 
@@ -89,7 +84,7 @@ def getCurrentFeature(handLandmarks):
         for lm in handLandmarks.landmark:
             currentFeature.append(lm.x)
             currentFeature.append(lm.y)
-    # print(f"current:{currentFeature}")
+
     return currentFeature
 
 
@@ -116,7 +111,6 @@ def putTextOnIndexFinger(image, handLandmarks, text):
             ):
                 ih, iw, ic = image.shape
                 x, y = int(lm.x * iw), int(lm.y * ih)
-                # image = drawR(image, x, y)
                 cv2.putText(
                     image,
                     text,

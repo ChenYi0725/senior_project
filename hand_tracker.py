@@ -1,7 +1,7 @@
 import cv2
 import mediapipe as mp
-import camera
-import recorder as rd
+import tools.camera as camera
+import tools.recorder as rd
 import time
 import os
 
@@ -18,7 +18,6 @@ featurePerData = []
 continuousFeature = []  # 目前抓到的前面
 featurePerProcess = []  # 這次執行所抓到的資料
 currentFeatute = []  # 目前畫面的資料
-
 
 
 def drawRecordedTime(image):
@@ -41,9 +40,6 @@ def getContinuousFeature(currentFeature):
     else:
         del continuousFeature[0]
         continuousFeature.append(currentFeature)
-
-    # os.system("cls")
-    # print(len(continuousFeature))
     return continuousFeature
 
 
@@ -53,7 +49,6 @@ def getCurrentFeature(handLandmarks):
         for lm in handLandmarks.landmark:
             currentFeature.append(lm.x)
             currentFeature.append(lm.y)
-    # print(f"current:{currentFeature}")
     return currentFeature
 
 
@@ -176,19 +171,9 @@ with mpHandsSolution.Hands(
         if recorder.isRecording and isLRExist(results):
             BGRImage = recordingSign(BGRImage)
             featurePerData = recorder.recordBothHand(results, featurePerData)
-            # rightFeaturePerData = recorder.recordRightData(results, rightFeaturePerData)
-            # leftFeaturePerData = recorder.recordLeftData(results, leftFeaturePerData)
-            # recorder.recordedTimes = recorder.recordedTimes + 1
 
             if recorder.isFinish:
-                # print(f"r{len(rightFeaturePerData)}")
-                # print(f"l{len(leftFeaturePerData)}")
-                # featurePerData.append(rightFeaturePerData)
-                # featurePerData.append(leftFeaturePerData)
-
                 featurePerProcess.append(featurePerData)
-                # rightFeaturePerData = []
-                # leftFeaturePerData = []
                 featurePerData = []
                 recorder.isFinish = False
         else:
@@ -204,7 +189,7 @@ with mpHandsSolution.Hands(
 
 featuresString = str(featurePerProcess)
 # 10 15 10
-with open("test_left.txt", "w") as f:
+with open("result.txt", "w") as f:
     f.write(featuresString)
 frameReceiver.camera.release()
 cv2.destroyAllWindows()

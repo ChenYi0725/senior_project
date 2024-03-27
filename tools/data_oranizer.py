@@ -7,7 +7,6 @@ test = np.array(
     ]
 )
 
-
 class DataOrganizer:
     def cutFirstTimeStep(self, npArray):
         npArray = npArray[:, 1:, :]
@@ -52,15 +51,3 @@ class DataOrganizer:
         npArray = self.cutFirstTimeStep(npArray)
         return npArray
 
-    # def cutInhomogeneousData(self,inputList, size):
-    #     for j in range(len(inputList)):
-    #         if j == len(inputList):
-    #             break
-    #         for i in range(len(inputList[j])):
-    #             if not len(inputList[j][i]) == size:
-    #                 del inputList[j]
-    #     return inputList
-
-
-# do = DataOrganizer()
-# print(do.cutFirstTimeStep(test))

@@ -3,7 +3,7 @@ from keras.models import Sequential
 from keras.layers import LSTM, Dense
 from keras import backend as K
 import tensorflow as tf
-import data_oranizer as do
+import tools.data_oranizer as do
 from keras import regularizers
 import numpy as np
 
@@ -79,10 +79,6 @@ weights[0][:, 18:42] *= 0
 weights[0][:, 12:18] *= 2.0
 print(f"weight{weights}")
 model.layers[0].set_weights(weights)
-# model.compile(optimizer="adam", loss=myLossFunction, metrics=["accuracy"])
-# model.add(Dense(1))  # 全連接層，輸出1個值
-# 編譯模型
-# model.compile(optimizer="adam", loss=myLossFunction)
 # ===========================================
 # 訓練模型
 model.fit(data, target, epochs=650, batch_size=32, verbose=2)
