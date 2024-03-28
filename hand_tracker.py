@@ -34,22 +34,22 @@ def drawRecordedTime(image):
     return image
 
 
-def getContinuousFeature(currentFeature):
-    if len(continuousFeature) < 20:
-        continuousFeature.append(currentFeature)
-    else:
-        del continuousFeature[0]
-        continuousFeature.append(currentFeature)
-    return continuousFeature
+# def getContinuousFeature(currentFeature):
+#     if len(continuousFeature) < 20:
+#         continuousFeature.append(currentFeature)
+#     else:
+#         del continuousFeature[0]
+#         continuousFeature.append(currentFeature)
+#     return continuousFeature
 
 
-def getCurrentFeature(handLandmarks):
-    currentFeature = []
-    if handLandmarks.landmark:
-        for lm in handLandmarks.landmark:
-            currentFeature.append(lm.x)
-            currentFeature.append(lm.y)
-    return currentFeature
+# def getCurrentFeature(handLandmarks):
+#     currentFeature = []
+#     if handLandmarks.landmark:
+#         for lm in handLandmarks.landmark:
+#             currentFeature.append(lm.x)
+#             currentFeature.append(lm.y)
+#     return currentFeature
 
 
 def LRMovement(image, results):
@@ -61,7 +61,6 @@ def LRMovement(image, results):
                 image = putTextOnIndexFinger(image, handLandmarks, "L")
             elif handed.classification[0].label == "Right":
                 image = putTextOnIndexFinger(image, handLandmarks, "R")
-                getContinuousFeature(getCurrentFeature(handLandmarks))
     return image
 
 
@@ -167,11 +166,9 @@ with mpHandsSolution.Hands(
             )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
 
-        # 加入判斷雙手是否存在
         if recorder.isRecording and isLRExist(results):
             BGRImage = recordingSign(BGRImage)
             featurePerData = recorder.recordBothHand(results, featurePerData)
-
             if recorder.isFinish:
                 featurePerProcess.append(featurePerData)
                 featurePerData = []

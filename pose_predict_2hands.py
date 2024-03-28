@@ -3,39 +3,47 @@ import mediapipe as mp
 import numpy as np
 import tools.data_oranizer as do
 import tools.camera as camera
-import threading
 import tools.recorder as rd
-import time
-import os
 from keras.models import load_model
 
-# 直接儲存2維陣列，ctrl A 直接複製在屁股
-
-featurePerProcess = []
-currentFeatute = []
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
-organizer = do.DataOrganizer()
-lstmModel = load_model("lstm_hand_model.keras")
-
 recorder = rd.Recorder()
 frameReceiver = camera.Camera()
-featurePerData = []
-continuousFeature = []
+organizer = do.DataOrganizer()
+lstmModel = load_model("lstm_2hand_model.keras")
+resultsList = [
+    "Back Clockwise",
+    "Back Counter Clockwise",
+    "Bottom Left",
+    "Bottom Right",
+    "Front Clockwise",
+    "Front Counter Clockwise",
+    "Left Down",
+    "Left Up",
+    "Right Down",
+    "Right Up",
+    "Top Left",
+    "Top Right",
+    "Stop",
+]
+
+currentFeature = []  # 目前畫面的資料
+continuousFeature = []  # 目前抓到的前面
 
 
-def drawRecordedTime(image):
-    text = f"Times:{len(featurePerProcess)}"
-    cv2.putText(
-        image,
-        text,
-        (image.shape[1] - 200, 50),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        1,
-        (255, 0, 0),
-        2,
-    )
+def decodedResult(predictedResult):
+    decodedResult = resultsList[predictedResult[0]]
+    return decodedResult
+
+
+def predict(continuousFeature, image):
+    predictData = np.array([continuousFeature])
+    predictData = organizer.getRelativeLocation(predictData)
+    prediction = lstmModel.predict(predictData)
+    predictedResult = np.argmax(prediction, axis=1)
+    image = drawResultOnImage(image=image, result=decodedResult(predictedResult))
     return image
 
 
@@ -53,40 +61,15 @@ def drawResultOnImage(image, result):
     return image
 
 
-def decodeResult(result):
-    if result[0] == 0:
-        decodedResult = "stop"
-    elif result[0] == 1:
-        decodedResult = "down"
-    else:
-        decodedResult = "left"
-    return decodedResult
-
-
-def getContinuousFeature(currentFeature, image):
+def combineToContinuous(currentFeature, image):
     global continuousFeature
     if len(continuousFeature) < 21:
         continuousFeature.append(currentFeature)
     else:
         del continuousFeature[0]
         continuousFeature.append(currentFeature)
-        
-        predictData = np.array([continuousFeature])
-        predictData = organizer.getRelativeLocation(predictData)
-        prediction = lstmModel.predict(predictData)
-        predictedResult = np.argmax(prediction, axis=1)
-        image = drawResultOnImage(image=image, result=decodeResult(predictedResult))
+        image = predict(continuousFeature, image)
     return image
-
-
-def getCurrentFeature(handLandmarks):
-    currentFeature = []
-    if handLandmarks.landmark:
-        for lm in handLandmarks.landmark:
-            currentFeature.append(lm.x)
-            currentFeature.append(lm.y)
-
-    return currentFeature
 
 
 def LRMovement(image, results):
@@ -98,12 +81,29 @@ def LRMovement(image, results):
                 image = putTextOnIndexFinger(image, handLandmarks, "L")
             elif handed.classification[0].label == "Right":
                 image = putTextOnIndexFinger(image, handLandmarks, "R")
-                image = getContinuousFeature(getCurrentFeature(handLandmarks), image)
     return image
 
 
-def putTextOnIndexFinger(image, handLandmarks, text):
+def isLRExist(results):
+    isLeft = False
+    isRight = False
+    if results.multi_hand_landmarks:
+        for handLandmarks, handed in zip(
+            results.multi_hand_landmarks, results.multi_handedness
+        ):
+            if handed.classification[0].label == "Left":
+                isLeft = True
+            elif handed.classification[0].label == "Right":
+                isRight = True
+    else:
+        return False
+    if isLeft and isRight:
+        return True
+    else:
+        return False
 
+
+def putTextOnIndexFinger(image, handLandmarks, text):
     if handLandmarks.landmark:
         for lm in handLandmarks.landmark:
             if (
@@ -125,8 +125,9 @@ def putTextOnIndexFinger(image, handLandmarks, text):
 
 
 def onMouse(event, x, y, flags, param):
-    if event == cv2.EVENT_LBUTTONDOWN:
-        recorder.isRecording = True
+    # if event == cv2.EVENT_LBUTTONDOWN:
+    #     recorder.isRecording = True
+    pass
 
 
 def drawNodeOnImage(results, image):  # 將節點和骨架繪製到影像中
@@ -142,28 +143,6 @@ def drawNodeOnImage(results, image):  # 將節點和骨架繪製到影像中
     return image
 
 
-def drawR(image, x, y):
-    boxSize = 110
-    x1 = int(x)
-    y1 = int(y)
-    x2 = int(x + boxSize)
-    y2 = int(y + boxSize)
-    cv2.rectangle(image, (x1, y1), (x2, y2), (0, 0, 255), 2)
-    return image
-
-
-def recordingSign(image):
-    cv2.circle(
-        image,
-        (image.shape[1] - 50, 50),
-        min(10, 10),
-        (0, 0, 255),
-        cv2.FILLED,
-    )
-
-    return image
-
-
 # mediapipe 啟用偵測手掌
 with mpHandsSolution.Hands(
     model_complexity=0,
@@ -176,37 +155,39 @@ with mpHandsSolution.Hands(
         exit()
     while True:
         isCatchered, BGRImage = frameReceiver.getBGRImage()
-        # BGRImage ->畫面 RGBImage->model
+        # BGRImage -> 畫面， RGBImage -> model
         RGBImage = frameReceiver.BGRToRGB(BGRImage)
-
         if not isCatchered:
             print("Cannot receive frame")
             break
 
         results = hands.process(RGBImage)  # 偵測手掌
-
+        if isLRExist(results):
+            cv2.putText(
+                BGRImage,
+                "Exist",
+                (300, 30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1,
+                (255, 255, 0),
+                2,
+            )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
 
-        if recorder.isRecording:
-            BGRImage = recordingSign(BGRImage)
-            featurePerData = recorder.recordRightData(results, featurePerData)
-            if recorder.isFinish:
-                featurePerProcess.append(featurePerData)
-                featurePerData = []
-                recorder.isFinish = False
+        # 加入判斷雙手是否存在
+        if isLRExist(results):  # 抓資料
+            currentFeature = recorder.record2HandPerFrame(results)
+            combineToContinuous(currentFeature, BGRImage)
         else:
             pass
 
-        BGRImage = LRMovement(BGRImage, results)  # predict
-        BGRImage = drawRecordedTime(BGRImage)
+        BGRImage = LRMovement(BGRImage, results)
+
         cv2.imshow("hand tracker", BGRImage)
         cv2.setMouseCallback("hand tracker", onMouse)  # 滑鼠事件
+
         if cv2.waitKey(5) == ord("q"):
             break  # 按下 q 鍵停止
 
-
-featuresString = str(featurePerProcess)
-with open("test_left.txt", "w") as f:
-    f.write(featuresString)
 frameReceiver.camera.release()
 cv2.destroyAllWindows()
