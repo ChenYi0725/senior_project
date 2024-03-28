@@ -60,8 +60,8 @@ print("=====================")
 model = Sequential()
 model.add(
     LSTM(
-        243,
-        activation="relu",
+        243,            
+        activation="tanh",
         input_shape=(21, 42),  # 21,42
         kernel_regularizer=regularizers.l2(0.01),
     )
@@ -72,7 +72,7 @@ model.compile(
     optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"]
 )
 
-weights = model.layers[0].get_weights()  # 改食指權重
+weights = model.layers[0].get_weights()  # 改權重
 # weights[0] 為權重矩陣
 weights[0][:, 0:12] *= 0
 weights[0][:, 18:42] *= 0

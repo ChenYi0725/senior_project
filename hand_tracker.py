@@ -191,5 +191,6 @@ featuresString = str(featurePerProcess)
 # 10 15 10
 with open("result.txt", "w") as f:
     f.write(featuresString)
+
 frameReceiver.camera.release()
 cv2.destroyAllWindows()
