@@ -107,6 +107,9 @@ def putTextOnIndexFinger(image, handLandmarks, text):
 def onMouse(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         recorder.isRecording = True
+    elif event == cv2.EVENT_RBUTTONDOWN:
+        if len(featurePerProcess) > 0:
+            del featurePerProcess[-1]
 
 
 def drawNodeOnImage(results, image):  # 將節點和骨架繪製到影像中
