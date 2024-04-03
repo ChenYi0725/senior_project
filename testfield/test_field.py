@@ -12,10 +12,10 @@ mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 recorder = rd.Recorder()
 frameReceiver = camera.Camera()
 
-featurePerData = []         
-continuousFeature = []      #目前抓到的前面
-featurePerProcess = []      #這次執行所抓到的資料
-currentFeatute = []         #目前畫面的資料
+featurePerData = []
+continuousFeature = []  # 目前抓到的前面
+featurePerProcess = []  # 這次執行所抓到的資料
+currentFeatute = []  # 目前畫面的資料
 
 
 def drawRecordedTime(image):

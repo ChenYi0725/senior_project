@@ -106,7 +106,8 @@ def putTextOnIndexFinger(image, handLandmarks, text):
 
 def onMouse(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
-        recorder.isRecording = True
+        if recorder.isRecording == False:
+            recorder.isRecording = True
     elif event == cv2.EVENT_RBUTTONDOWN:
         if len(featurePerProcess) > 0:
             del featurePerProcess[-1]
@@ -184,7 +185,7 @@ with mpHandsSolution.Hands(
         cv2.imshow("hand tracker", BGRImage)
         cv2.setMouseCallback("hand tracker", onMouse)  # 滑鼠事件
 
-        if cv2.waitKey(5) == ord("q"):
+        if cv2.waitKey(5) == ord("q") or cv2.waitKey(5) == ord("Q"):
             break  # 按下 q 鍵停止
 
 featuresString = str(featurePerProcess)
