@@ -1,13 +1,16 @@
 import numpy as np
 
-dataLengthList = [3, 4, 5, 6, 7]
-del dataLengthList[-1]
-target = np.zeros(25)
-targetValue = 0
-targetPointer = 0
-print(target)
-for i in dataLengthList:
-    target[targetPointer : targetPointer + i] = targetValue
-    targetPointer = targetPointer + i
-    targetValue = targetValue + 1
-print(target)
+# import tools.data_oranizer
+
+# organizer = tools.data_oranizer.DataOrganizer()
+eList = [1, 2, 5]
+theList = [0, 10, 20, 3, 4, 50, 6, 7]
+dnu = 0
+# theList = organizer.getDataFromTxt("data_set_2hand\\bottom_right_2hands")
+for i in range(len(theList)):
+    if i in eList:
+        del theList[i]
+        i = i - 1
+        d
+
+print(theList)

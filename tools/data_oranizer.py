@@ -55,7 +55,9 @@ class DataOrganizer:
             for j in range(len(targetFile[i])):
                 if not len(targetFile[i][j]) == 84:
                     errorList.append(i)
+                continue
         return errorList
 
-
-
+    def reverseTimeData(self, npArray):
+        npArray = [sublist[::-1] for sublist in npArray]
+        return npArray

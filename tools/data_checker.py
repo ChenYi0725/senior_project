@@ -25,7 +25,6 @@ checkData("data_set_2hand\\top_right_2hands")
 checkData("data_set_2hand\\stop_2hands")
 checkData("data_set_2hand\\right_up_2hands")
 checkData("data_set_2hand\\right_down_2hands")
-# =============================
 checkData("data_set_2hand\\bottom_left_2hands")
 checkData("data_set_2hand\\bottom_right_2hands")
 checkData("data_set_2hand\\front_clockwise_2hands")

@@ -13,6 +13,8 @@ recorder = rd.Recorder()
 frameReceiver = camera.Camera()
 organizer = do.DataOrganizer()
 lstmModel = load_model("lstm_2hand_model.keras")
+showResult = "none"
+
 resultsList = [
     "Back Clockwise",
     "Back Counter Clockwise",
@@ -43,16 +45,32 @@ def predict(continuousFeature, image):
     predictData = organizer.getRelativeLocation(predictData)
     prediction = lstmModel.predict(predictData)
     predictedResult = np.argmax(prediction, axis=1)
-    image = drawResultOnImage(image=image, result=decodedResult(predictedResult))
+    image = drawResultOnImage(
+        image=image,
+        result=decodedResult(predictedResult),
+        probabilities=prediction[0][predictedResult[0]],
+    )
     return image
 
 
-def drawResultOnImage(image, result):
-    result = str(result)
+def drawResultOnImage(image, result, probabilities):
+    global showResult
+    if probabilities > 0.7:
+        showResult = str(result)
+    probabilities = str(probabilities)
+    # cv2.putText(
+    #     image,
+    #     showResult,
+    #     (image.shape[1] - 400, 50),
+    #     cv2.FONT_HERSHEY_SIMPLEX,
+    #     1,
+    #     (255, 0, 0),
+    #     2,
+    # )
     cv2.putText(
         image,
-        result,
-        (image.shape[1] - 400, 50),
+        probabilities,
+        (image.shape[1] - 400, 250),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
         (255, 0, 0),
@@ -173,7 +191,15 @@ with mpHandsSolution.Hands(
                 2,
             )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
-
+        cv2.putText(
+            BGRImage,
+            showResult,
+            (300, 130),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (255, 255, 0),
+            2,
+        )
         # 加入判斷雙手是否存在
         if isLRExist(results):  # 抓資料
             currentFeature = recorder.record2HandPerFrame(results)
