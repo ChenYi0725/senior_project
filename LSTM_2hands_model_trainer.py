@@ -28,23 +28,23 @@ def expandTo2Hands(fingerlist):
 
 # ========================
 
-backClockwiseData = organizer.getDataFromTxt("data_set_2hand/back_clockwise_2hands")
+backClockwiseData = organizer.getDataFromTxt("data_set_2hands/back_clockwise_2hands")
 backCounterClockwiseData = organizer.getDataFromTxt(
-    "data_set_2hand/back_counter_clockwise_2hands"
+    "data_set_2hands/back_counter_clockwise_2hands"
 )
-bottomLeftData = organizer.getDataFromTxt("data_set_2hand/bottom_left_2hands")
-bottomRightData = organizer.getDataFromTxt("data_set_2hand/bottom_right_2hands")
-frontClockwiseData = organizer.getDataFromTxt("data_set_2hand/front_clockwise_2hands")
+bottomLeftData = organizer.getDataFromTxt("data_set_2hands/bottom_left_2hands")
+bottomRightData = organizer.getDataFromTxt("data_set_2hands/bottom_right_2hands")
+frontClockwiseData = organizer.getDataFromTxt("data_set_2hands/front_clockwise_2hands")
 frontCounterClockwiseData = organizer.getDataFromTxt(
-    "data_set_2hand/front_counter_clockwise_2hands"
+    "data_set_2hands/front_counter_clockwise_2hands"
 )
-leftDownData = organizer.getDataFromTxt("data_set_2hand/left_down_2hands")
-leftUpData = organizer.getDataFromTxt("data_set_2hand/left_up_2hands")
-rightDownData = organizer.getDataFromTxt("data_set_2hand/right_down_2hands")
-rightUpData = organizer.getDataFromTxt("data_set_2hand/right_up_2hands")
-topLeftData = organizer.getDataFromTxt("data_set_2hand/top_left_2hands")
-topRightData = organizer.getDataFromTxt("data_set_2hand/top_right_2hands")
-stopData = organizer.getDataFromTxt("data_set_2hand/stop_2hands")
+leftDownData = organizer.getDataFromTxt("data_set_2hands/left_down_2hands")
+leftUpData = organizer.getDataFromTxt("data_set_2hands/left_up_2hands")
+rightDownData = organizer.getDataFromTxt("data_set_2hands/right_down_2hands")
+rightUpData = organizer.getDataFromTxt("data_set_2hands/right_up_2hands")
+topLeftData = organizer.getDataFromTxt("data_set_2hands/top_left_2hands")
+topRightData = organizer.getDataFromTxt("data_set_2hands/top_right_2hands")
+stopData = organizer.getDataFromTxt("data_set_2hands/stop_2hands")
 # ==========================
 
 # ==========================
@@ -98,13 +98,12 @@ print("=====================")
 model = Sequential()
 model.add(
     LSTM(
-        243,
+        256,
         activation="tanh",
-        input_shape=(21, 84),  # 21,84
+        input_shape=(21, 84),
         kernel_regularizer=regularizers.l2(0.01),
     )
-)  # LSTM層，100個神經元，每個樣本有21個時間點，42個特徵，正則化強度0.01
-# ===========================================
+)
 model.add(Dense(13, activation="softmax"))
 model.compile(
     optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"]
@@ -127,11 +126,11 @@ ringFinger = expandTo2Hands(ringFinger)
 littleFinger = expandTo2Hands(littleFinger)
 palm = expandTo2Hands(palm)
 
-weights[0][:, thumb] *= 1
-weights[0][:, indexFinger] *= 2
-weights[0][:, middleFinger] *= 1
-weights[0][:, ringFinger] *= 2
-weights[0][:, littleFinger] *= 2
+weights[0][:, thumb] *= 0.5
+weights[0][:, indexFinger] *= 1
+weights[0][:, middleFinger] *= 0.5
+weights[0][:, ringFinger] *= 1
+weights[0][:, littleFinger] *= 1
 weights[0][:, palm] *= 0
 # weights[0] 為權重矩陣
 # 左手 前42
@@ -150,7 +149,8 @@ weights[0][:, palm] *= 0
 model.layers[0].set_weights(weights)
 # ===========================================
 # 訓練模型
-model.fit(data, target, epochs=650, batch_size=32, verbose=2)
+print("Start Training")
+model.fit(data, target, epochs=650, batch_size=21, verbose=2)
 
 loss = model.evaluate(data, target)
 

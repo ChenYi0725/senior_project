@@ -10,7 +10,7 @@ def checkData(fileLocation):
     print(f"{fileName}:", end="")
     print(organizer.checkData(f"{fileLocation}"), end="  ")
     print("len:", end="")
-    if len(organizer.getDataFromTxt(f"{fileLocation}")) >= 300:
+    if len(organizer.getDataFromTxt(f"{fileLocation}")) >= 1000:
         print(len(organizer.getDataFromTxt(f"{fileLocation}")), end="")
         print(" done")
     else:
@@ -18,19 +18,23 @@ def checkData(fileLocation):
         num = num + 1
 
 
-checkData("data_set_2hand\\left_down_2hands")
-checkData("data_set_2hand\\left_up_2hands")
-checkData("data_set_2hand\\top_left_2hands")
-checkData("data_set_2hand\\top_right_2hands")
-checkData("data_set_2hand\\stop_2hands")
-checkData("data_set_2hand\\right_up_2hands")
-checkData("data_set_2hand\\right_down_2hands")
-checkData("data_set_2hand\\bottom_left_2hands")
-checkData("data_set_2hand\\bottom_right_2hands")
-checkData("data_set_2hand\\front_clockwise_2hands")
-checkData("data_set_2hand\\front_counter_clockwise_2hands")
-checkData("data_set_2hand\\back_clockwise_2hands")
-checkData("data_set_2hand\\back_counter_clockwise_2hands")
+print("start")
+
+# checkData("data_set_2hands\\left_down_2hands")
+# checkData("data_set_2hands\\left_up_2hands")
+# checkData("data_set_2hands\\top_left_2hands")
+# checkData("data_set_2hands\\top_right_2hands")
+# checkData("data_set_2hands\\stop_2hands")
+# checkData("data_set_2hands\\right_up_2hands")
+# checkData("data_set_2hands\\right_down_2hands")
+# checkData("data_set_2hands\\bottom_left_2hands")
+# checkData("data_set_2hands\\bottom_right_2hands")
+
+checkData("data_set_2hands\\front_clockwise_2hands")
+checkData("data_set_2hands\\front_counter_clockwise_2hands")
+
+# checkData("data_set_2hands\\back_clockwise_2hands")
+# checkData("data_set_2hands\\back_counter_clockwise_2hands")
 
 print("")
-print(f"still need {num}")
+# print(f"still need {num}")

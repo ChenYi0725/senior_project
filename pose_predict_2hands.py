@@ -41,15 +41,27 @@ def decodedResult(predictedResult):
 
 
 def predict(continuousFeature, image):
-    predictData = np.array([continuousFeature])
+    # 確保 continuousFeature 是一個形狀一致的 NumPy 陣列
+    continuousFeature = np.array(continuousFeature)
+
+    # 檢查 continuousFeature 的形狀，應該是 (21, 84)
+    if continuousFeature.shape != (21, 84):
+        raise ValueError("continuousFeature 的形狀錯誤")
+
+    # 創建 predictData 時指定形狀一致的數據
+    predictData = np.expand_dims(continuousFeature, axis=0)  # 形狀應為 (1, 21, 84)
+
+    # 使用模型進行預測
     predictData = organizer.getRelativeLocation(predictData)
     prediction = lstmModel.predict(predictData)
     predictedResult = np.argmax(prediction, axis=1)
+
     image = drawResultOnImage(
         image=image,
         result=decodedResult(predictedResult),
         probabilities=prediction[0][predictedResult[0]],
     )
+
     return image
 
 
@@ -81,12 +93,21 @@ def drawResultOnImage(image, result, probabilities):
 
 def combineToContinuous(currentFeature, image):
     global continuousFeature
+
     if len(continuousFeature) < 21:
         continuousFeature.append(currentFeature)
     else:
         del continuousFeature[0]
         continuousFeature.append(currentFeature)
-        image = predict(continuousFeature, image)
+
+        # 確保 continuousFeature 是一個形狀一致的 NumPy 陣列
+        continuousFeature_np = np.array(continuousFeature)
+
+        if continuousFeature_np.shape == (21, len(currentFeature)):
+            image = predict(continuousFeature_np, image)
+        else:
+            print("continuousFeature 形狀錯誤，跳過預測")
+
     return image
 
 
