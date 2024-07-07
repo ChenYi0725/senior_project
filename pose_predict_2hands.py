@@ -15,6 +15,7 @@ organizer = do.DataOrganizer()
 lstmModel = load_model("lstm_2hand_model.keras")
 showResult = "none"
 
+
 resultsList = [
     "Back Clockwise",
     "Back Counter Clockwise",
@@ -36,49 +37,66 @@ continuousFeature = []  # 目前抓到的前面
 
 
 def decodedResult(predictedResult):
-    decodedResult = resultsList[predictedResult[0]]
+    decodedResult = resultsList[predictedResult]
     return decodedResult
 
 
+def findResultIndex(result):
+    try:
+        resultCode = resultsList.index(result)
+        return resultCode
+    except:
+        print("not found, return 12")
+        return 12
+
+
 def predict(continuousFeature, image):
-    # 確保 continuousFeature 是一個形狀一致的 NumPy 陣列
     continuousFeature = np.array(continuousFeature)
 
     # 檢查 continuousFeature 的形狀，應該是 (21, 84)
     if continuousFeature.shape != (21, 84):
         raise ValueError("continuousFeature 的形狀錯誤")
 
-    # 創建 predictData 時指定形狀一致的數據
-    predictData = np.expand_dims(continuousFeature, axis=0)  # 形狀應為 (1, 21, 84)
+    predictData = np.expand_dims(continuousFeature, axis=0)  # (1, 21, 84)
 
-    # 使用模型進行預測
+    # 進行預測
     predictData = organizer.getRelativeLocation(predictData)
     prediction = lstmModel.predict(predictData)
-    predictedResult = np.argmax(prediction, axis=1)
+    predictedResult = np.argmax(prediction, axis=1)[0]  # 確保predictedResult是一個整數
 
     image = drawResultOnImage(
         image=image,
-        result=decodedResult(predictedResult),
-        probabilities=prediction[0][predictedResult[0]],
+        resultCode=predictedResult,
+        probabilities=prediction[0][predictedResult],
     )
 
     return image
 
 
-def drawResultOnImage(image, result, probabilities):
+def blockTheReverseMove(lastCode, currentCode):  # 傳code近來
+
+    if not (lastCode == 12 and currentCode == 12):
+        if (lastCode // 2) == (currentCode // 2):
+
+            return lastCode
+        else:
+            return currentCode
+    return currentCode
+
+
+def drawResultOnImage(image, resultCode, probabilities):
     global showResult
+
     if probabilities > 0.7:
-        showResult = str(result)
+        lastCode = findResultIndex(showResult)
+        print(f"old result {resultCode}")
+        resultCode = blockTheReverseMove(lastCode, resultCode)
+        print(f"result {resultCode}")
+        result = decodedResult(resultCode)
+
+        showResult = str(result)  # result不知道是誰
+
     probabilities = str(probabilities)
-    # cv2.putText(
-    #     image,
-    #     showResult,
-    #     (image.shape[1] - 400, 50),
-    #     cv2.FONT_HERSHEY_SIMPLEX,
-    #     1,
-    #     (255, 0, 0),
-    #     2,
-    # )
     cv2.putText(
         image,
         probabilities,
@@ -88,10 +106,19 @@ def drawResultOnImage(image, result, probabilities):
         (255, 0, 0),
         2,
     )
+    cv2.putText(
+        image,
+        showResult,
+        (300, 130),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (255, 255, 0),
+        2,
+    )
     return image
 
 
-def combineToContinuous(currentFeature, image):
+def combineAndPredict(currentFeature, image):
     global continuousFeature
 
     if len(continuousFeature) < 21:
@@ -212,19 +239,20 @@ with mpHandsSolution.Hands(
                 2,
             )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
-        cv2.putText(
-            BGRImage,
-            showResult,
-            (300, 130),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1,
-            (255, 255, 0),
-            2,
-        )
+
+        # cv2.putText(
+        #     BGRImage,
+        #     showResult,
+        #     (300, 130),
+        #     cv2.FONT_HERSHEY_SIMPLEX,
+        #     1,
+        #     (255, 255, 0),
+        #     2,
+        # )
         # 加入判斷雙手是否存在
         if isLRExist(results):  # 抓資料
             currentFeature = recorder.record2HandPerFrame(results)
-            combineToContinuous(currentFeature, BGRImage)
+            combineAndPredict(currentFeature, BGRImage)
         else:
             pass
 
