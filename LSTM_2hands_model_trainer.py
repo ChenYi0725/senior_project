@@ -157,3 +157,4 @@ loss = model.evaluate(data, target)
 print("loss:", loss)
 
 model.save("lstm_2hand_model.keras")
+tf.saved_model.save(model, "./")
