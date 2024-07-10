@@ -4,7 +4,7 @@ import numpy as np
 import tools.data_oranizer as do
 import tools.camera as camera
 import tools.recorder as rd
-from keras.models import load_model
+import keras
 
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
@@ -12,7 +12,7 @@ mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 recorder = rd.Recorder()
 frameReceiver = camera.Camera()
 organizer = do.DataOrganizer()
-lstmModel = load_model("lstm_2hand_model.keras")
+lstmModel = keras.models.load_model("lstm_2hand_model.keras")
 showResult = "none"
 
 

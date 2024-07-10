@@ -1,7 +1,4 @@
-import random
-from keras.models import Sequential
-from keras.layers import LSTM, Dense
-from keras import backend as K
+import keras
 import tensorflow as tf
 import tools.data_oranizer as do
 from keras import regularizers
@@ -26,8 +23,27 @@ def expandTo2Hands(fingerlist):
     return fingerlist
 
 
-# ========================
+def exportSavedModelAndTflite(model):
+    model.export(filepath="lstm_2hand_saved_model", format="tf_saved_model")
+    converter = tf.lite.TFLiteConverter.from_saved_model("lstm_2hand_saved_model")
+    converter.experimental_enable_resource_variables = True
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,
+        tf.lite.OpsSet.SELECT_TF_OPS,
+    ]
+    converter._experimental_lower_tensor_list_ops = False
+    tflite_model = converter.convert()
+    with open("lstm_2hand.tflite", "wb") as f:
+        f.write(tflite_model)
 
+
+def evaluateModel(model):
+    loss = model.evaluate(data, target)
+    print("loss:", loss)
+
+
+# ========================
+print("loading data")
 backClockwiseData = organizer.getDataFromTxt("data_set_2hands/back_clockwise_2hands")
 backCounterClockwiseData = organizer.getDataFromTxt(
     "data_set_2hands/back_counter_clockwise_2hands"
@@ -48,6 +64,7 @@ stopData = organizer.getDataFromTxt("data_set_2hands/stop_2hands")
 # ==========================
 
 # ==========================
+print("init Data")
 backClockwiseData = initData(backClockwiseData)
 backCounterClockwiseData = initData(backCounterClockwiseData)
 bottomLeftData = initData(bottomLeftData)
@@ -92,25 +109,25 @@ for i in dataLengthList:
     targetPointer = targetPointer + i
     targetValue = targetValue + 1
 
-# print(target)
 print("=====================")
 # 定義模型
-model = Sequential()
+model = keras.models.Sequential()
 model.add(
-    LSTM(
+    keras.layers.LSTM(
         256,
         activation="tanh",
         input_shape=(21, 84),
         kernel_regularizer=regularizers.l2(0.01),
     )
 )
-model.add(Dense(13, activation="softmax"))
+model.add(keras.layers.Dense(13, activation="softmax"))
 model.compile(
-    optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"]
+    optimizer="adam",
+    loss=keras.losses.SparseCategoricalCrossentropy(),
+    metrics=["accuracy"],
 )
 
 weights = model.layers[0].get_weights()  # 改權重
-
 
 thumb = [4, 5, 6, 7, 8, 9]
 indexFinger = [12, 13, 14, 15, 16, 17]
@@ -144,17 +161,15 @@ weights[0][:, palm] *= 0
 # weights[0][:, 20:25] *= 1  # middle finger
 # weights[0][:, 28:33] *= 2  # ring finger
 # weights[0][:, 36:41] *= 2  # little finger
-
-
 model.layers[0].set_weights(weights)
 # ===========================================
 # 訓練模型
 print("Start Training")
-model.fit(data, target, epochs=650, batch_size=21, verbose=2)
 
-loss = model.evaluate(data, target)
+model.fit(data, target, epochs=650, batch_size=21, verbose=1)
+evaluateModel(model)
 
-print("loss:", loss)
-
+# 輸出模型
+exportSavedModelAndTflite(model)
 model.save("lstm_2hand_model.keras")
-tf.saved_model.save(model, "./")
+model.save("lstm_2hand_model.h5")
