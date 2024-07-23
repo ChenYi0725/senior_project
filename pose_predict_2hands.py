@@ -52,7 +52,7 @@ def findResultIndex(result):
 
 def predict(continuousFeature, image):
     continuousFeature = np.array(continuousFeature)
-
+    continuousFeature = (continuousFeature - continuousFeature.min()) / (continuousFeature.max() - continuousFeature.min())
     # 檢查 continuousFeature 的形狀，應該是 (21, 84)
     if continuousFeature.shape != (21, 84):
         raise ValueError("continuousFeature 的形狀錯誤")

@@ -13,6 +13,7 @@ def initData(inputList):
     inputList = np.array(inputList)
     dataLengthList.append(len(inputList))
     inputList = organizer.getRelativeLocation(inputList)
+    inputList = (inputList - inputList.min()) / (inputList.max() - inputList.min())
     return inputList
 
 
@@ -114,7 +115,7 @@ print("=====================")
 model = keras.models.Sequential()
 model.add(
     keras.layers.LSTM(
-        256,
+        units=256,
         activation="tanh",
         input_shape=(21, 84),
         kernel_regularizer=regularizers.l2(0.01),
@@ -173,3 +174,4 @@ evaluateModel(model)
 exportSavedModelAndTflite(model)
 model.save("lstm_2hand_model.keras")
 model.save("lstm_2hand_model.h5")
+print("finish")

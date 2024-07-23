@@ -91,6 +91,7 @@ def putTextOnIndexFinger(image, handLandmarks, text):
                 == handLandmarks.landmark[mpHandsSolution.HandLandmark.INDEX_FINGER_TIP]
             ):
                 ih, iw, ic = image.shape
+                # print(image.shape)
                 x, y = int(lm.x * iw), int(lm.y * ih)
                 cv2.putText(
                     image,
