@@ -20,21 +20,21 @@ def checkData(fileLocation):
 
 print("start")
 
-# checkData("data_set_2hands\\left_down_2hands")
-# checkData("data_set_2hands\\left_up_2hands")
-# checkData("data_set_2hands\\top_left_2hands")
-# checkData("data_set_2hands\\top_right_2hands")
-# checkData("data_set_2hands\\stop_2hands")
-# checkData("data_set_2hands\\right_up_2hands")
-# checkData("data_set_2hands\\right_down_2hands")
-# checkData("data_set_2hands\\bottom_left_2hands")
-# checkData("data_set_2hands\\bottom_right_2hands")
+checkData("data_set_2hands\\left_down_2hands")
+checkData("data_set_2hands\\left_up_2hands")
+checkData("data_set_2hands\\top_left_2hands")
+checkData("data_set_2hands\\top_right_2hands")
+checkData("data_set_2hands\\stop_2hands")
+checkData("data_set_2hands\\right_up_2hands")
+checkData("data_set_2hands\\right_down_2hands")
+checkData("data_set_2hands\\bottom_left_2hands")
+checkData("data_set_2hands\\bottom_right_2hands")
 
 checkData("data_set_2hands\\front_clockwise_2hands")
 checkData("data_set_2hands\\front_counter_clockwise_2hands")
 
-# checkData("data_set_2hands\\back_clockwise_2hands")
-# checkData("data_set_2hands\\back_counter_clockwise_2hands")
+checkData("data_set_2hands\\back_clockwise_2hands")
+checkData("data_set_2hands\\back_counter_clockwise_2hands")
 
 print("")
-# print(f"still need {num}")
+print(f"still need {num}")

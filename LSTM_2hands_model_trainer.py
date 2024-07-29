@@ -13,7 +13,7 @@ def initData(inputList):
     inputList = np.array(inputList)
     dataLengthList.append(len(inputList))
     inputList = organizer.getRelativeLocation(inputList)
-    inputList = (inputList - inputList.min()) / (inputList.max() - inputList.min())
+    # inputList = (inputList - inputList.min()) / (inputList.max() - inputList.min())
     return inputList
 
 
