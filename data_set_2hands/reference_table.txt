@@ -1,0 +1,12 @@
+left_down               => L'
+left_up                 => L 
+right_down              => R 
+right_up                => R'  
+top_left                => U 
+top_right               => U' 
+bottom_left             => D' 
+bottom_right            => D 
+front_clockwise         => B 
+front_counter_clockwise => B'
+back_clockwise          => F
+back_counter_clockwise  => F'

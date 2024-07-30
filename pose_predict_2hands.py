@@ -17,20 +17,36 @@ showResult = "none"
 
 
 resultsList = [
-    "Back Clockwise",
-    "Back Counter Clockwise",
-    "Bottom Left",
-    "Bottom Right",
-    "Front Clockwise",
-    "Front Counter Clockwise",
-    "Left Down",
-    "Left Up",
-    "Right Down",
-    "Right Up",
-    "Top Left",
-    "Top Right",
+    "F (Back Clockwise)",
+    "F'(Back Counter Clockwise)",
+    "D'(Bottom Left)",
+    "D (Bottom Right)",
+    "B'(Front Clockwise)",
+    "B (Front Counter Clockwise)",
+    "L'(Left Down)",
+    "L (Left Up)",
+    "R (Right Down)",
+    "R'(Right Up)",
+    "U (Top Left)",
+    "U'(Top Right)",
     "Stop",
 ]
+
+# resultsList = [
+#     "F ",
+#     "F'",
+#     "D'",
+#     "D ",
+#     "B'",
+#     "B ",
+#     "L'",
+#     "L ",
+#     "R ",
+#     "R'",
+#     "U ",
+#     "U'",
+#     "Stop",
+# ]
 
 currentFeature = []  # 目前畫面的資料
 continuousFeature = []  # 目前抓到的前面
@@ -52,7 +68,9 @@ def findResultIndex(result):
 
 def predict(continuousFeature, image):
     continuousFeature = np.array(continuousFeature)
-    continuousFeature = (continuousFeature - continuousFeature.min()) / (continuousFeature.max() - continuousFeature.min())
+    continuousFeature = (continuousFeature - continuousFeature.min()) / (
+        continuousFeature.max() - continuousFeature.min()
+    )
     # 檢查 continuousFeature 的形狀，應該是 (21, 84)
     if continuousFeature.shape != (21, 84):
         raise ValueError("continuousFeature 的形狀錯誤")
