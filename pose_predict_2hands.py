@@ -17,12 +17,12 @@ showResult = "none"
 
 
 resultsList = [
-    "F (Back Clockwise)",
-    "F'(Back Counter Clockwise)",
+    "B'(Back Clockwise)",
+    "B (Back Counter Clockwise)",
     "D'(Bottom Left)",
     "D (Bottom Right)",
-    "B'(Front Clockwise)",
-    "B (Front Counter Clockwise)",
+    "F (Front Clockwise)",
+    "F' (Front Counter Clockwise)",
     "L'(Left Down)",
     "L (Left Up)",
     "R (Right Down)",
@@ -33,12 +33,12 @@ resultsList = [
 ]
 
 # resultsList = [
-#     "F ",
-#     "F'",
-#     "D'",
-#     "D ",
 #     "B'",
 #     "B ",
+#     "D'",
+#     "D ",
+#     "F ",
+#     "F'",
 #     "L'",
 #     "L ",
 #     "R ",
@@ -50,6 +50,8 @@ resultsList = [
 
 currentFeature = []  # 目前畫面的資料
 continuousFeature = []  # 目前抓到的前面
+missCounter = 0
+maxMissCounter = 5
 
 
 def decodedResult(predictedResult):
@@ -66,6 +68,9 @@ def findResultIndex(result):
         return 12
 
 
+# def preprocessingContinuousFeature
+
+
 def predict(continuousFeature, image):
     continuousFeature = np.array(continuousFeature)
     continuousFeature = (continuousFeature - continuousFeature.min()) / (
@@ -78,7 +83,7 @@ def predict(continuousFeature, image):
     predictData = np.expand_dims(continuousFeature, axis=0)  # (1, 21, 84)
 
     # 進行預測
-    predictData = organizer.getRelativeLocation(predictData)
+    predictData = organizer.preprocessingData(predictData)
     prediction = lstmModel.predict(predictData)
     predictedResult = np.argmax(prediction, axis=1)[0]  # 確保predictedResult是一個整數
 
@@ -258,20 +263,16 @@ with mpHandsSolution.Hands(
             )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
 
-        # cv2.putText(
-        #     BGRImage,
-        #     showResult,
-        #     (300, 130),
-        #     cv2.FONT_HERSHEY_SIMPLEX,
-        #     1,
-        #     (255, 255, 0),
-        #     2,
-        # )
-        # 加入判斷雙手是否存在
+        # 若雙手同時存在
         if isLRExist(results):  # 抓資料
+            missCounter = 0
             currentFeature = recorder.record2HandPerFrame(results)
+
             combineAndPredict(currentFeature, BGRImage)
-        else:
+        else:  # 若連續沒抓到資料的幀數 > maxMissCounter，則清空先前紀錄的資料
+            missCounter = missCounter + 1
+            if missCounter > maxMissCounter:
+                continuousFeature = []
             pass
 
         BGRImage = LRMovement(BGRImage, results)

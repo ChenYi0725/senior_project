@@ -8,12 +8,12 @@ dataLengthList = []
 organizer = do.DataOrganizer()
 
 
-def initData(inputList):
+def initData(inputList):  # inputList.shape = (data numbers, time step, features)
     global dataLengthList
     inputList = np.array(inputList)
     dataLengthList.append(len(inputList))
-    inputList = organizer.getRelativeLocation(inputList)
-    # inputList = (inputList - inputList.min()) / (inputList.max() - inputList.min())
+    inputList = organizer.preprocessingData(inputList)
+
     return inputList
 
 

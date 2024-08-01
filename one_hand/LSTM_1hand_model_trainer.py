@@ -42,9 +42,9 @@ downData = np.array(downData)
 stopData = np.array(stopData)
 leftData = np.array(leftData)
 
-downData = organizer.getRelativeLocation(downData)
-stopData = organizer.getRelativeLocation(stopData)
-leftData = organizer.getRelativeLocation(leftData)
+downData = organizer.preprocessingData(downData)
+stopData = organizer.preprocessingData(stopData)
+leftData = organizer.preprocessingData(leftData)
 # data格式 eg.[3][2][1]三個樣本 兩個時間步長 一個特徵點
 data = np.concatenate((stopData, downData, leftData), axis=0)
 
@@ -60,7 +60,7 @@ print("=====================")
 model = Sequential()
 model.add(
     LSTM(
-        243,            
+        243,
         activation="tanh",
         input_shape=(21, 42),  # 21,42
         kernel_regularizer=regularizers.l2(0.01),

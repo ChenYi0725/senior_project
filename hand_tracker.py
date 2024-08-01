@@ -192,6 +192,7 @@ with mpHandsSolution.Hands(
 featuresString = str(featurePerProcess)
 # 10 15 10
 with open("result.txt", "w") as f:
+    featuresString = featuresString[1:-1]
     f.write(featuresString)
 
 frameReceiver.camera.release()

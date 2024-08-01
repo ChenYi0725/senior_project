@@ -2,15 +2,34 @@ import matplotlib.pyplot as plt
 import data_oranizer
 
 organizer = data_oranizer.DataOrganizer()
-data = organizer.getDataFromTxt("D:\Python_project\senior_project\\result")
-pdata = data[0][0]  # 取最後一個
-pdata = pdata[42:]
-x_values = pdata[::2]  # 將列表中的奇數索引視為 x 坐標
-y_values = pdata[1::2]  # 將列表中的偶數索引視為 y 坐標
-plt.figure(figsize=(8, 6))
-plt.plot(x_values, y_values, marker="o", linestyle="", color="b")
-plt.title("Coordinate Plot")
-plt.xlabel("X")
-plt.ylabel("Y")
-plt.grid(True)
-plt.show()
+
+data = organizer.getDataFromTxt(
+    "D:\Python_project\senior_project\\data_set_2hands/back_clockwise_2hands"
+)
+oneData = data[100]
+
+data_ranges = [(54, 60, "b"), (70, 76, "g"), (62, 68, "r")]
+
+# plt.figure() 應放在循環內，每次迭代創建新的圖表
+for idx, pdata in enumerate(oneData):
+    plt.figure(figsize=(8, 6))
+
+    for start, end, color in data_ranges:
+        segment = pdata[start:end]
+        x_values = segment[::2]  # 奇數當x
+        y_values = segment[1::2]  # 偶數當y
+        plt.plot(
+            x_values,
+            y_values,
+            marker="o",
+            linestyle="",
+            color=color,
+            label=f"Range {start}-{end}",
+        )
+
+    plt.title(f"Coordinate Plot for Data {idx+1}")
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.grid(True)
+    plt.legend()
+    plt.show()

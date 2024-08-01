@@ -70,9 +70,9 @@ def getContinuousFeature(currentFeature, image):
     else:
         del continuousFeature[0]
         continuousFeature.append(currentFeature)
-        
+
         predictData = np.array([continuousFeature])
-        predictData = organizer.getRelativeLocation(predictData)
+        predictData = organizer.preprocessingData(predictData)
         prediction = lstmModel.predict(predictData)
         predictedResult = np.argmax(prediction, axis=1)
         image = drawResultOnImage(image=image, result=decodeResult(predictedResult))

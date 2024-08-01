@@ -11,7 +11,14 @@ class DataOrganizer:
         npArray = npArray[:, 1:, :]
         return npArray
 
-    def getRelativeLocation(self, npArray):
+    def preprocessingData(self, inputList):
+        inputList = np.array(inputList)
+        inputList = self.normalizedWithEachTimeSteps(inputList)
+        # inputList = self.getRelativeWithFirstTimeStep(inputList)
+        inputList = self.getRelativeLocation(inputList)
+        return inputList
+
+    def getRelativeLocation(self, npArray):  # 輸入:(data number,time step, features)
         for i in range(len(npArray)):
             for j in range(len(npArray[i])):
                 originX = npArray[i][j][0]
@@ -22,6 +29,17 @@ class DataOrganizer:
                     else:
                         npArray[i][j][k] = npArray[i][j][k] - originY
         return npArray
+
+    def normalizedWithEachTimeSteps(
+        self, inputList
+    ):  # 輸入:(data number,time step, features)
+
+        for i in range(len(inputList)):
+            for j in range(inputList.shape[i]):
+                inputList[i, j] = (inputList[i, j] - inputList[i, j].min()) / (
+                    inputList[i, j].max() - inputList[i, j].min()
+                )
+        return inputList
 
     def getRelativeWithFirstTimeStep(self, npArray):
         for i in range(len(npArray)):
@@ -53,7 +71,7 @@ class DataOrganizer:
         npArray = self.cutFirstTimeStep(npArray)
         return npArray
 
-    def checkData(self, fileName):
+    def findErrorData(self, fileName):
         targetFile = self.getDataFromTxt(fileName)
         errorList = []
         for i in range(len(targetFile)):
