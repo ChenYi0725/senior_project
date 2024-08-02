@@ -1,7 +1,7 @@
 import cv2
 import mediapipe as mp
 import numpy as np
-import tools.data_oranizer as do
+import tools.data_organizer as do
 import tools.camera as camera
 import threading
 import tools.recorder as rd

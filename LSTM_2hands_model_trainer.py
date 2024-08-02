@@ -1,6 +1,6 @@
 import keras
 import tensorflow as tf
-import tools.data_oranizer as do
+import tools.data_organizer as do
 from keras import regularizers
 import numpy as np
 

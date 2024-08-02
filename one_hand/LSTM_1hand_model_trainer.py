@@ -3,7 +3,7 @@ from keras.models import Sequential
 from keras.layers import LSTM, Dense
 from keras import backend as K
 import tensorflow as tf
-import tools.data_oranizer as do
+import tools.data_organizer as do
 from keras import regularizers
 import numpy as np
 

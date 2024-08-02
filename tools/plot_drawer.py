@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-import data_oranizer
+import tools.data_organizer as data_organizer
 
-organizer = data_oranizer.DataOrganizer()
+organizer = data_organizer.DataOrganizer()
 
 data = organizer.getDataFromTxt(
     "D:\Python_project\senior_project\\data_set_2hands/back_clockwise_2hands"

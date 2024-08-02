@@ -1,6 +1,6 @@
-import data_oranizer
+import tools.data_organizer as data_organizer
 
-organizer = data_oranizer.DataOrganizer()
+organizer = data_organizer.DataOrganizer()
 num = 0  # 未達需求的資料集數量
 neededData = 1000
 
