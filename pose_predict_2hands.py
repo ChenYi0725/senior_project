@@ -14,8 +14,8 @@ frameReceiver = camera.Camera()
 organizer = do.DataOrganizer()
 lstmModel = keras.models.load_model("lstm_2hand_model.keras")
 showResult = "none"
-
-
+predictFrequence = 5
+predictCount = 0
 resultsList = [
     "B'(Back Clockwise)",
     "B (Back Counter Clockwise)",
@@ -76,9 +76,10 @@ def predict(continuousFeature, image):
     continuousFeature = (continuousFeature - continuousFeature.min()) / (
         continuousFeature.max() - continuousFeature.min()
     )
-    # 檢查 continuousFeature 的形狀，應該是 (21, 84)
+    # 檢查 continuousFeature 的形狀，是 (21, 84)
     if continuousFeature.shape != (21, 84):
-        raise ValueError("continuousFeature 的形狀錯誤")
+        continuousFeature = []
+        # raise ValueError("continuousFeature 的形狀錯誤")
 
     predictData = np.expand_dims(continuousFeature, axis=0)  # (1, 21, 84)
 
@@ -86,11 +87,12 @@ def predict(continuousFeature, image):
     predictData = organizer.preprocessingData(predictData)
     prediction = lstmModel.predict(predictData)
     predictedResult = np.argmax(prediction, axis=1)[0]  # 確保predictedResult是一個整數
-
+    probabilities = prediction[0][predictedResult]
+    # return predictedResult, probabilities
     image = drawResultOnImage(
         image=image,
         resultCode=predictedResult,
-        probabilities=prediction[0][predictedResult],
+        probabilities=probabilities,
     )
 
     return image
@@ -143,7 +145,8 @@ def drawResultOnImage(image, resultCode, probabilities):
 
 def combineAndPredict(currentFeature, image):
     global continuousFeature
-
+    global predictCount
+    global predictFrequence
     if len(continuousFeature) < 21:
         continuousFeature.append(currentFeature)
     else:
@@ -152,11 +155,13 @@ def combineAndPredict(currentFeature, image):
 
         # 確保 continuousFeature 是一個形狀一致的 NumPy 陣列
         continuousFeature_np = np.array(continuousFeature)
-
-        if continuousFeature_np.shape == (21, len(currentFeature)):
-            image = predict(continuousFeature_np, image)
-        else:
-            print("continuousFeature 形狀錯誤，跳過預測")
+        predictCount = predictCount + 1
+        if predictCount == predictFrequence:
+            predictCount = 0
+            if continuousFeature_np.shape == (21, len(currentFeature)):
+                image = predict(continuousFeature_np, image)
+            else:
+                print("continuousFeature 形狀錯誤，跳過預測")
 
     return image
 
@@ -268,11 +273,16 @@ with mpHandsSolution.Hands(
             missCounter = 0
             currentFeature = recorder.record2HandPerFrame(results)
 
-            combineAndPredict(currentFeature, BGRImage)
+            BGRImage = combineAndPredict(currentFeature, BGRImage)
+            # =======
+            # 
+            # 在這裡把結果寫在image上，把原本回傳的image 改成回傳結果與機率
+            # =======
         else:  # 若連續沒抓到資料的幀數 > maxMissCounter，則清空先前紀錄的資料
             missCounter = missCounter + 1
             if missCounter > maxMissCounter:
                 continuousFeature = []
+                predictCount = 0
             pass
 
         BGRImage = LRMovement(BGRImage, results)
