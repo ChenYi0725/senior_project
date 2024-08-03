@@ -1,0 +1,13 @@
+    B'(Back Clockwise)
+    B (Back Counter Clockwise)
+    D'(Bottom Left)
+    D (Bottom Right)
+    F (Front Clockwise)
+    F' (Front Counter Clockwise)
+    L'(Left Down)
+    L (Left Up)
+    R (Right Down)
+    R'(Right Up)
+    U (Top Left)
+    U'(Top Right)
+    Stop
