@@ -5,10 +5,12 @@ from keras import regularizers
 import numpy as np
 import tools.model_evaluator as me
 from tensorflow.keras.losses import CategoricalCrossentropy
+import tools.ctc_loss_function as CTC
+
 
 dataLengthList = []
 organizer = do.DataOrganizer()
-
+CTCLoss = CTC.CTCLoss()
 labels = [
     "B'(Back Clockwise)",
     "B (Back Counter Clockwise)",
@@ -143,8 +145,9 @@ model.add(
 model.add(keras.layers.Dense(13, activation="softmax"))
 model.compile(
     optimizer="adam",
-    # loss=keras.losses.SparseCategoricalCrossentropy(),
-    loss=keras.losses.CategoricalCrossentropy(),
+    loss=keras.losses.SparseCategoricalCrossentropy(),
+    # loss= keras.losses.CategoricalCrossentropy(),
+    # loss=CTCLoss,
     metrics=["accuracy"],
 )
 
@@ -181,7 +184,15 @@ model.layers[0].set_weights(weights)
 # 訓練模型
 print("Start Training")
 
-model.fit(data, target, epochs=650, batch_size=21, verbose=1, callbacks=[evaluator])
+model.fit(
+    data,
+    target,
+    epochs=650,
+    batch_size=21,
+    verbose=1,
+    # callbacks=[evaluator]
+)
+
 evaluateModel(model)
 
 # 輸出模型
