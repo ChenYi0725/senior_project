@@ -13,8 +13,8 @@ recorder = rd.Recorder()
 frameReceiver = camera.Camera()
 organizer = do.DataOrganizer()
 lstmModel = keras.models.load_model("lstm_2hand_model.keras")
-showResult = "none"
-predictFrequence = 5
+showResult = "wait"
+predictFrequence = 1
 predictCount = 0
 resultsList = [
     "B'(Back Clockwise)",
@@ -30,6 +30,7 @@ resultsList = [
     "U (Top Left)",
     "U'(Top Right)",
     "Stop",
+    "error",
 ]
 
 # resultsList = [
@@ -59,19 +60,16 @@ def decodedResult(predictedResult):
     return decodedResult
 
 
-def findResultIndex(result):
+def getResultIndex(result):
     try:
         resultCode = resultsList.index(result)
         return resultCode
     except:
         print("not found, return 12")
-        return 12
+        return 13
 
 
-# def preprocessingContinuousFeature
-
-
-def predict(continuousFeature, image):
+def predict(continuousFeature):
     continuousFeature = np.array(continuousFeature)
     continuousFeature = (continuousFeature - continuousFeature.min()) / (
         continuousFeature.max() - continuousFeature.min()
@@ -85,24 +83,15 @@ def predict(continuousFeature, image):
 
     # 進行預測
     predictData = organizer.preprocessingData(predictData)
-    prediction = lstmModel.predict(predictData)
+    prediction = lstmModel.predict(predictData, verbose=0)
     predictedResult = np.argmax(prediction, axis=1)[0]  # 確保predictedResult是一個整數
     probabilities = prediction[0][predictedResult]
-    # return predictedResult, probabilities
-    image = drawResultOnImage(
-        image=image,
-        resultCode=predictedResult,
-        probabilities=probabilities,
-    )
-
-    return image
+    return predictedResult, probabilities
 
 
-def blockTheReverseMove(lastCode, currentCode):  # 傳code近來
-
+def blockTheReverseMove(lastCode, currentCode):
     if not (lastCode == 12 and currentCode == 12):
         if (lastCode // 2) == (currentCode // 2):
-
             return lastCode
         else:
             return currentCode
@@ -113,13 +102,10 @@ def drawResultOnImage(image, resultCode, probabilities):
     global showResult
 
     if probabilities > 0.7:
-        lastCode = findResultIndex(showResult)
-        print(f"old result {resultCode}")
+        lastCode = getResultIndex(showResult)
         resultCode = blockTheReverseMove(lastCode, resultCode)
-        print(f"result {resultCode}")
         result = decodedResult(resultCode)
-
-        showResult = str(result)  # result不知道是誰
+        showResult = str(result)
 
     probabilities = str(probabilities)
     cv2.putText(
@@ -143,10 +129,11 @@ def drawResultOnImage(image, resultCode, probabilities):
     return image
 
 
-def combineAndPredict(currentFeature, image):
+def combineAndPredict(currentFeature):
     global continuousFeature
     global predictCount
     global predictFrequence
+
     if len(continuousFeature) < 21:
         continuousFeature.append(currentFeature)
     else:
@@ -159,11 +146,12 @@ def combineAndPredict(currentFeature, image):
         if predictCount == predictFrequence:
             predictCount = 0
             if continuousFeature_np.shape == (21, len(currentFeature)):
-                image = predict(continuousFeature_np, image)
+                predictedResult, probabilities = predict(continuousFeature_np)
+                return predictedResult, probabilities
             else:
                 print("continuousFeature 形狀錯誤，跳過預測")
 
-    return image
+    return 13, 0
 
 
 def LRMovement(image, results):
@@ -218,12 +206,6 @@ def putTextOnIndexFinger(image, handLandmarks, text):
     return image
 
 
-def onMouse(event, x, y, flags, param):
-    # if event == cv2.EVENT_LBUTTONDOWN:
-    #     recorder.isRecording = True
-    pass
-
-
 def drawNodeOnImage(results, image):  # 將節點和骨架繪製到影像中
     if results.multi_hand_landmarks:
         for handMarks in results.multi_hand_landmarks:
@@ -260,11 +242,11 @@ with mpHandsSolution.Hands(
             cv2.putText(
                 BGRImage,
                 "Exist",
-                (300, 30),
-                cv2.FONT_HERSHEY_SIMPLEX,
+                (30, 85),
+                cv2.FONT_HERSHEY_COMPLEX,
                 1,
-                (255, 255, 0),
-                2,
+                (255, 0, 0),
+                1,
             )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
 
@@ -273,25 +255,29 @@ with mpHandsSolution.Hands(
             missCounter = 0
             currentFeature = recorder.record2HandPerFrame(results)
 
-            BGRImage = combineAndPredict(currentFeature, BGRImage)
-            # =======
-            # 
-            # 在這裡把結果寫在image上，把原本回傳的image 改成回傳結果與機率
-            # =======
+            predictedResult, probabilities = combineAndPredict(currentFeature)
+            BGRImage = drawResultOnImage(
+                image=BGRImage,
+                resultCode=predictedResult,
+                probabilities=probabilities,
+            )
+
         else:  # 若連續沒抓到資料的幀數 > maxMissCounter，則清空先前紀錄的資料
             missCounter = missCounter + 1
             if missCounter > maxMissCounter:
                 continuousFeature = []
+                showResult = "wait"
                 predictCount = 0
             pass
 
         BGRImage = LRMovement(BGRImage, results)
 
         cv2.imshow("hand tracker", BGRImage)
-        cv2.setMouseCallback("hand tracker", onMouse)  # 滑鼠事件
 
         if cv2.waitKey(5) == ord("q"):
             break  # 按下 q 鍵停止
+        if cv2.getWindowProperty("hand tracker", cv2.WND_PROP_VISIBLE) < 1:
+            break
 
 frameReceiver.camera.release()
 cv2.destroyAllWindows()

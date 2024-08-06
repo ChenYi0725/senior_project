@@ -4,38 +4,8 @@ import matplotlib.pyplot as plt
 from keras.callbacks import Callback
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
-import numpy as np
-import keras
 from keras.utils import to_categorical
-from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
-
-# 生成假數據
-num_samples = 1000
-num_features = 20
-num_classes = 10
-
-# 隨機生成特徵數據
-x_train = np.random.random((num_samples, num_features))
-x_test = np.random.random((num_samples // 4, num_features))
-
-# 隨機生成標籤數據
-y_train = np.random.randint(num_classes, size=(num_samples,))
-y_test = np.random.randint(num_classes, size=(num_samples // 4,))
-
-# 將標籤數據轉換為 one-hot 編碼
-y_train = to_categorical(y_train, num_classes)
-y_test = to_categorical(y_test, num_classes)
-
-# 定義模型
-model = keras.models.Sequential(
-    [
-        keras.layers.Dense(64, activation="relu", input_shape=(num_features,)),
-        keras.layers.Dense(num_classes, activation="softmax"),
-    ]
-)
-
-model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
-
+from sklearn.datasets import make_classification
 
 class ModelEvaluator(Callback):
     def __init__(self, xTest, yTest, label):
@@ -60,9 +30,7 @@ class ModelEvaluator(Callback):
         plt.xlabel("Epoch")
         plt.show()
 
-    def drawConfusionMatrix(
-        self,
-    ):
+    def drawConfusionMatrix(self):
         yPred = self.model.predict(self.xTest)
         yPredClasses = np.argmax(yPred, axis=1)
         yTrue = np.argmax(self.yTest, axis=1)
@@ -86,8 +54,46 @@ class ModelEvaluator(Callback):
         plt.title("Confusion Matrix")
         plt.show()
 
+# # 生成三個類別的數據
+# num_samples_per_class = 300
+# num_features = 2  # 使用二維特徵以便可視化
+# num_classes = 3
 
-evaluator = ModelEvaluator(x_test, y_test)
+# # 隨機生成數據
+# np.random.seed(0)
+# X, y = make_classification(
+#     n_samples=num_samples_per_class * num_classes,
+#     n_features=num_features,
+#     n_informative=num_features,
+#     n_redundant=0,
+#     n_clusters_per_class=1,
+#     n_classes=num_classes,
+#     class_sep=2,  # 增加類別間距
+#     random_state=0,
+# )
 
-# 訓練模型
-model.fit(x_train, y_train, epochs=10, callbacks=[evaluator])
+# # 將標籤轉換為 one-hot 編碼
+# y_one_hot = to_categorical(y, num_classes)
+
+# # 分割數據集
+# num_train_samples = num_samples_per_class * (num_classes - 1)  # 用於訓練的樣本數量
+# x_train = X[:num_train_samples]
+# y_train = y_one_hot[:num_train_samples]
+
+# x_test = X[num_train_samples:]
+# y_test = y_one_hot[num_train_samples:]
+
+# # 定義模型
+# model = keras.models.Sequential(
+#     [
+#         keras.layers.Dense(64, activation="relu", input_shape=(num_features,)),
+#         keras.layers.Dense(num_classes, activation="softmax"),
+#     ]
+# )
+# model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
+# # 顯示的標籤
+# labels = [f"Class {i}" for i in range(num_classes)]
+# # 創建評估器實例
+# evaluator = ModelEvaluator(x_test, y_test, labels)
+# # 訓練模型
+# model.fit(x_train, y_train, epochs=10, callbacks=[evaluator])

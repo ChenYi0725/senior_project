@@ -3,9 +3,27 @@ import tensorflow as tf
 import tools.data_organizer as do
 from keras import regularizers
 import numpy as np
+import tools.model_evaluator as me
 
 dataLengthList = []
 organizer = do.DataOrganizer()
+
+labels = [
+    "B'(Back Clockwise)",
+    "B (Back Counter Clockwise)",
+    "D'(Bottom Left)",
+    "D (Bottom Right)",
+    "F (Front Clockwise)",
+    "F' (Front Counter Clockwise)",
+    "L'(Left Down)",
+    "L (Left Up)",
+    "R (Right Down)",
+    "R'(Right Up)",
+    "U (Top Left)",
+    "U'(Top Right)",
+    "Stop",
+]
+evaluator = me.ModelEvaluator(testData, testLabel, labels)
 
 
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
@@ -101,7 +119,7 @@ data = np.concatenate(
 
 
 print(f"whole:{len(data)}")
-
+# ----------------------訓練集label 0 開始
 target = np.zeros(len(data))  # total
 targetPointer = 0
 targetValue = 0
@@ -156,18 +174,12 @@ weights[0][:, palm] *= 0
 # 拇指、中指 => 1
 # 手掌、手腕 => 0  0 1 5 9 13 17
 
-# weights[0][:, :] *= 1  # all
-# weights[0][:, 4:9] *= 1  # thumb
-# weights[0][:, 12:17] *= 1  # index finger
-# weights[0][:, 20:25] *= 1  # middle finger
-# weights[0][:, 28:33] *= 2  # ring finger
-# weights[0][:, 36:41] *= 2  # little finger
 model.layers[0].set_weights(weights)
 # ===========================================
 # 訓練模型
 print("Start Training")
 
-model.fit(data, target, epochs=650, batch_size=21, verbose=1)
+model.fit(data, target, epochs=650, batch_size=21, verbose=1, callbacks=[evaluator])
 evaluateModel(model)
 
 # 輸出模型
