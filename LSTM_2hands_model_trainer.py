@@ -4,6 +4,7 @@ import tools.data_organizer as do
 from keras import regularizers
 import numpy as np
 import tools.model_evaluator as me
+from tensorflow.keras.losses import CategoricalCrossentropy
 
 dataLengthList = []
 organizer = do.DataOrganizer()
@@ -23,7 +24,7 @@ labels = [
     "U'(Top Right)",
     "Stop",
 ]
-evaluator = me.ModelEvaluator(testData, testLabel, labels)
+# evaluator = me.ModelEvaluator(testData, testLabel, labels)
 
 
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
@@ -142,7 +143,8 @@ model.add(
 model.add(keras.layers.Dense(13, activation="softmax"))
 model.compile(
     optimizer="adam",
-    loss=keras.losses.SparseCategoricalCrossentropy(),
+    # loss=keras.losses.SparseCategoricalCrossentropy(),
+    loss=keras.losses.CategoricalCrossentropy(),
     metrics=["accuracy"],
 )
 
