@@ -39,7 +39,7 @@ resultsList = [
     "Stop",
     "wait",
 ]
-
+lastResult = 13
 # resultsList = [
 #     "B'",
 #     "B ",
@@ -108,12 +108,13 @@ def blockTheReverseMove(lastCode, currentCode):
 def drawResultOnImage(image, resultCode, probabilities):
     global showResult
 
-    if probabilities > 0.7:
-        lastCode = getResultIndex(showResult)
-        resultCode = blockTheReverseMove(lastCode, resultCode)
-        result = decodedResult(resultCode)
-        showResult = str(result)
-
+    # if probabilities > 0.7:
+    #     lastCode = getResultIndex(showResult)
+    #     resultCode = blockTheReverseMove(lastCode, resultCode)
+    #     result = decodedResult(resultCode)
+    #     showResult = str(result)
+    result = decodedResult(resultCode)
+    showResult = str(result)
     probabilities = str(probabilities)
     cv2.putText(
         image,
@@ -230,6 +231,7 @@ def imageHandPosePredict(RGBImage):
     global showResult
     global predictCount
     global hands
+    global lastResult
     if not hasattr(imageHandPosePredict, "missCounter"):
         imageHandPosePredict.missCounter = 0
 
@@ -240,6 +242,14 @@ def imageHandPosePredict(RGBImage):
         imageHandPosePredict.missCounter = 0  # miss
         currentFeature = recorder.record2HandPerFrame(results)
         predictedResult, probabilities = combineAndPredict(currentFeature)
+        if probabilities > 0.7:
+            if predictedResult < 13 and predictedResult // 2 == lastResult // 2:
+                predictedResult = lastResult  # block reverse move
+            else:
+                lastResult = predictedResult
+        else:
+            predictedResult = lastResult
+
     else:
         if missCounter >= maxMissCounter:
             continuousFeature = []

@@ -41,6 +41,8 @@ currentFeature = []  # 目前畫面的資料
 continuousFeature = []  # 目前抓到的前面
 missCounter = 0
 maxMissCounter = 5
+lastResult = 13
+acceptableProbability = 0.7
 # -----------
 app = Flask(__name__)
 
@@ -68,6 +70,13 @@ def imageHandPosePredict(RGBImage):
         imageHandPosePredict.missCounter = 0  # miss
         currentFeature = recorder.record2HandPerFrame(results)
         predictedResult, probabilities = combineAndPredict(currentFeature)
+        if probabilities > acceptableProbability:
+            if predictedResult < 13 and predictedResult // 2 == lastResult // 2:
+                predictedResult = lastResult  # block reverse move
+            else:
+                lastResult = predictedResult
+        else:
+            predictedResult = lastResult
     else:
         if missCounter >= maxMissCounter:
             continuousFeature = []
