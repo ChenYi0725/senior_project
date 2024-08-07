@@ -6,16 +6,23 @@ import tools.camera as camera
 import tools.recorder as rd
 import keras
 
-mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
-mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
-mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 recorder = rd.Recorder()
 frameReceiver = camera.Camera()
 organizer = do.DataOrganizer()
+
+mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
+mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
+mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 lstmModel = keras.models.load_model("lstm_2hand_model.keras")
 showResult = "wait"
-predictFrequence = 1
+predictFrequence = 3
 predictCount = 0
+hands = mpHandsSolution.Hands(
+    model_complexity=0,
+    max_num_hands=2,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5,
+)
 resultsList = [
     "B'(Back Clockwise)",
     "B (Back Counter Clockwise)",
@@ -30,7 +37,7 @@ resultsList = [
     "U (Top Left)",
     "U'(Top Right)",
     "Stop",
-    "error",
+    "wait",
 ]
 
 # resultsList = [
@@ -65,7 +72,7 @@ def getResultIndex(result):
         resultCode = resultsList.index(result)
         return resultCode
     except:
-        print("not found, return 12")
+        print("not found, return 13")
         return 13
 
 
@@ -154,7 +161,7 @@ def combineAndPredict(currentFeature):
     return 13, 0
 
 
-def LRMovement(image, results):
+def LeftRightHandClassify(image, results):
     if results.multi_hand_landmarks:
         for handLandmarks, handed in zip(
             results.multi_hand_landmarks, results.multi_handedness
@@ -166,7 +173,7 @@ def LRMovement(image, results):
     return image
 
 
-def isLRExist(results):
+def isBothExist(results):
     isLeft = False
     isRight = False
     if results.multi_hand_landmarks:
@@ -177,8 +184,7 @@ def isLRExist(results):
                 isLeft = True
             elif handed.classification[0].label == "Right":
                 isRight = True
-    else:
-        return False
+
     if isLeft and isRight:
         return True
     else:
@@ -219,65 +225,58 @@ def drawNodeOnImage(results, image):  # 將節點和骨架繪製到影像中
     return image
 
 
-# mediapipe 啟用偵測手掌
-with mpHandsSolution.Hands(
-    model_complexity=0,
-    max_num_hands=2,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5,
-) as hands:
+def imageHandPosePredict(RGBImage):
+    global continuousFeature
+    global showResult
+    global predictCount
+    global hands
+    if not hasattr(imageHandPosePredict, "missCounter"):
+        imageHandPosePredict.missCounter = 0
+
+    results = hands.process(RGBImage)  # 偵測手掌
+    predictedResult = 13
+    probabilities = 0
+    if isBothExist(results):
+        imageHandPosePredict.missCounter = 0  # miss
+        currentFeature = recorder.record2HandPerFrame(results)
+        predictedResult, probabilities = combineAndPredict(currentFeature)
+    else:
+        if missCounter >= maxMissCounter:
+            continuousFeature = []
+            showResult = "wait"
+            predictCount = 0
+        else:
+            imageHandPosePredict.missCounter = imageHandPosePredict.missCounter + 1
+    return predictedResult, probabilities
+
+
+while True:
     if not frameReceiver.camera.isOpened():
         print("Cannot open camera")
         exit()
-    while True:
-        isCatchered, BGRImage = frameReceiver.getBGRImage()
-        # BGRImage -> 畫面， RGBImage -> model
-        RGBImage = frameReceiver.BGRToRGB(BGRImage)
-        if not isCatchered:
-            print("Cannot receive frame")
-            break
+    isCatchered, BGRImage = frameReceiver.getBGRImage()
+    # BGRImage -> 畫面， RGBImage -> model
+    RGBImage = frameReceiver.BGRToRGB(BGRImage)
+    if not isCatchered:
+        print("Cannot receive frame")
+        break
 
-        results = hands.process(RGBImage)  # 偵測手掌
-        if isLRExist(results):
-            cv2.putText(
-                BGRImage,
-                "Exist",
-                (30, 85),
-                cv2.FONT_HERSHEY_COMPLEX,
-                1,
-                (255, 0, 0),
-                1,
-            )
-        BGRImage = drawNodeOnImage(results=results, image=BGRImage)
+    predictedResult, probabilities = imageHandPosePredict(RGBImage)
 
-        # 若雙手同時存在
-        if isLRExist(results):  # 抓資料
-            missCounter = 0
-            currentFeature = recorder.record2HandPerFrame(results)
+    BGRImage = drawResultOnImage(
+        image=BGRImage,
+        resultCode=predictedResult,
+        probabilities=probabilities,
+    )
 
-            predictedResult, probabilities = combineAndPredict(currentFeature)
-            BGRImage = drawResultOnImage(
-                image=BGRImage,
-                resultCode=predictedResult,
-                probabilities=probabilities,
-            )
+    # BGRImage = drawNodeOnImage(results=results, image=BGRImage)  # 可移除
+    # BGRImage = LeftRightHandClassify(BGRImage, results)  # 可移除
 
-        else:  # 若連續沒抓到資料的幀數 > maxMissCounter，則清空先前紀錄的資料
-            missCounter = missCounter + 1
-            if missCounter > maxMissCounter:
-                continuousFeature = []
-                showResult = "wait"
-                predictCount = 0
-            pass
-
-        BGRImage = LRMovement(BGRImage, results)
-
-        cv2.imshow("hand tracker", BGRImage)
-
-        if cv2.waitKey(5) == ord("q"):
-            break  # 按下 q 鍵停止
-        if cv2.getWindowProperty("hand tracker", cv2.WND_PROP_VISIBLE) < 1:
-            break
+    cv2.imshow("hand tracker", BGRImage)
+    if cv2.waitKey(5) == ord("q"):
+        break  # 按下 q 鍵停止
+    if cv2.getWindowProperty("hand tracker", cv2.WND_PROP_VISIBLE) < 1:
+        break
 
 frameReceiver.camera.release()
 cv2.destroyAllWindows()

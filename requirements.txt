@@ -1,0 +1,9 @@
+numpy
+keras
+mediapipe
+tensorflow
+opencv
+matplotlib
+seaborn
+sklearn
+flask
