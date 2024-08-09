@@ -1,6 +1,3 @@
-import mediapipe
-
-
 def get_dimension(lst):
     # 初始化維度為 1
     dimension = 1

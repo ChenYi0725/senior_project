@@ -4,16 +4,19 @@ import matplotlib.pyplot as plt
 from keras.callbacks import Callback
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
-from keras.utils import to_categorical
-from sklearn.datasets import make_classification
+from tools import data_organizer as do
+
 
 class ModelEvaluator(Callback):
-    def __init__(self, xTest, yTest, label):
+    def __init__(self, label):
         super(ModelEvaluator, self).__init__()
-        self.xTest = xTest
-        self.yTest = yTest
+        self.organizer = do.DataOrganizer()
         self.losses = []
         self.label = label
+        self.dataLengthList = []
+        self.xTest, self.yTest = self.createTestData()
+        print(self.xTest.shape)
+        print(self.yTest.shape)
 
     def on_epoch_end(self, epoch, logs={}):
         self.losses.append(logs.get("loss"))
@@ -53,6 +56,73 @@ class ModelEvaluator(Callback):
         plt.ylabel("True")
         plt.title("Confusion Matrix")
         plt.show()
+
+    # ----------------------------------------------------
+    def initData(
+        self, inputList
+    ):  # inputList.shape = (data numbers, time step, features)
+        inputList = np.array(inputList)
+        self.dataLengthList.append(len(inputList))
+        inputList = self.organizer.preprocessingData(inputList)
+        return inputList
+
+    def createTestData(self):
+        bp = self.organizer.getDataFromTxt("test_data_set/b'_test")
+        b = self.organizer.getDataFromTxt("test_data_set/b_test")
+        dp = self.organizer.getDataFromTxt("test_data_set/d'_test")
+        d = self.organizer.getDataFromTxt("test_data_set/d_test")
+        f = self.organizer.getDataFromTxt("test_data_set/f_test")
+        fp = self.organizer.getDataFromTxt("test_data_set/f'_test")
+        lp = self.organizer.getDataFromTxt("test_data_set/l'_test")
+        l = self.organizer.getDataFromTxt("test_data_set/l_test")
+        r = self.organizer.getDataFromTxt("test_data_set/r_test")
+        rp = self.organizer.getDataFromTxt("test_data_set/r'_test")
+        u = self.organizer.getDataFromTxt("test_data_set/u_test")
+        up = self.organizer.getDataFromTxt("test_data_set/u'_test")
+        stop = self.organizer.getDataFromTxt("test_data_set/stop_test")
+        # ---
+        bp = self.initData(bp)
+        b = self.initData(b)
+        dp = self.initData(dp)
+        d = self.initData(d)
+        f = self.initData(f)
+        fp = self.initData(fp)
+        lp = self.initData(lp)
+        l = self.initData(l)
+        r = self.initData(r)
+        rp = self.initData(rp)
+        u = self.initData(u)
+        up = self.initData(up)
+        stop = self.initData(stop)
+        # ------
+        testData = np.concatenate(
+            (
+                bp,
+                b,
+                dp,
+                d,
+                f,
+                fp,
+                lp,
+                l,
+                r,
+                rp,
+                u,
+                up,
+                stop,
+            ),
+            axis=0,
+        )
+        # --------------
+        label = np.zeros(len(testData))  # total
+        pointer = 0
+        value = 0
+        for i in self.dataLengthList:
+            label[pointer : pointer + i] = value
+            pointer = pointer + i
+            value = value + 1
+        return testData, label
+
 
 # # 生成三個類別的數據
 # num_samples_per_class = 300

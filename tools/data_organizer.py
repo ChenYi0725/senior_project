@@ -1,6 +1,4 @@
 import numpy as np
-import sys
-import os
 
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "utils")))
 # import data_set_2hands
@@ -54,9 +52,6 @@ class DataOrganizer:
         return npArray
 
     def getDataFromTxt(self, fileName):
-
-        # filePath = os.path.join(os.path.dirname(__file__), "..", f"{fileName}.txt")
-        # print("file path : " + filePath)
         with open(f"{fileName}.txt", "r") as file:
             content = file.read()
         result = eval(content)

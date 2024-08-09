@@ -1,8 +1,8 @@
-import tools.data_organizer as data_organizer
+import data_organizer as data_organizer
 
 organizer = data_organizer.DataOrganizer()
 num = 0  # 未達需求的資料集數量
-neededData = 1000
+neededData = 200
 
 
 def checkData(fileLocation):
@@ -29,20 +29,33 @@ def cleanData(fileLocation, errorData):
 
 print("start")
 
-checkData("data_set_2hands\\left_down_2hands")
-checkData("data_set_2hands\\left_up_2hands")
-checkData("data_set_2hands\\top_left_2hands")
-checkData("data_set_2hands\\top_right_2hands")
-checkData("data_set_2hands\\stop_2hands")
-checkData("data_set_2hands\\right_up_2hands")
-checkData("data_set_2hands\\right_down_2hands")
-checkData("data_set_2hands\\bottom_left_2hands")
-checkData("data_set_2hands\\bottom_right_2hands")
-checkData("data_set_2hands\\front_clockwise_2hands")
-checkData("data_set_2hands\\front_counter_clockwise_2hands")
-cleanData("data_set_2hands\\back_clockwise_2hands", 468)
-checkData("data_set_2hands\\back_clockwise_2hands")
-checkData("data_set_2hands\\back_counter_clockwise_2hands")
-
+# checkData("data_set_2hands\\left_down_2hands")
+# checkData("data_set_2hands\\left_up_2hands")
+# checkData("data_set_2hands\\top_left_2hands")
+# checkData("data_set_2hands\\top_right_2hands")
+# checkData("data_set_2hands\\stop_2hands")
+# checkData("data_set_2hands\\right_up_2hands")
+# checkData("data_set_2hands\\right_down_2hands")
+# checkData("data_set_2hands\\bottom_left_2hands")
+# checkData("data_set_2hands\\bottom_right_2hands")
+# checkData("data_set_2hands\\front_clockwise_2hands")
+# checkData("data_set_2hands\\front_counter_clockwise_2hands")
+# checkData("data_set_2hands\\back_clockwise_2hands")
+# checkData("data_set_2hands\\back_counter_clockwise_2hands")
+# cleanData("test_data_set\\stop_test",142)
+# ----------------------------------------------
+checkData("test_data_set\\stop_test")
+checkData("test_data_set\\l_test")
+checkData("test_data_set\\l'_test")
+checkData("test_data_set\\r_test")
+checkData("test_data_set\\r'_test")
+checkData("test_data_set\\u_test")
+checkData("test_data_set\\u'_test")
+checkData("test_data_set\\d_test")
+checkData("test_data_set\\d'_test")
+checkData("test_data_set\\f_test")
+checkData("test_data_set\\f'_test")
+checkData("test_data_set\\b_test")
+checkData("test_data_set\\b'_test")
 print("")
-print(f"still need {num}")
+print(f"unfinished {num}")

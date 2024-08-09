@@ -3,10 +3,8 @@ import tensorflow as tf
 import tools.data_organizer as do
 from keras import regularizers
 import numpy as np
-import tools.model_evaluator as me
-from tensorflow.keras.losses import CategoricalCrossentropy
 import tools.ctc_loss_function as CTC
-
+import tools.model_evaluator as me
 
 dataLengthList = []
 organizer = do.DataOrganizer()
@@ -26,7 +24,7 @@ labels = [
     "U'(Top Right)",
     "Stop",
 ]
-# evaluator = me.ModelEvaluator(testData, testLabel, labels)
+evaluator = me.ModelEvaluator(labels)
 
 
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
@@ -34,7 +32,6 @@ def initData(inputList):  # inputList.shape = (data numbers, time step, features
     inputList = np.array(inputList)
     dataLengthList.append(len(inputList))
     inputList = organizer.preprocessingData(inputList)
-
     return inputList
 
 
@@ -132,6 +129,13 @@ for i in dataLengthList:
     targetValue = targetValue + 1
 
 print("=====================")
+# ========================
+
+
+evaluator = me.ModelEvaluator(labels)
+
+
+# =========================
 # 定義模型
 model = keras.models.Sequential()
 model.add(
@@ -184,14 +188,7 @@ model.layers[0].set_weights(weights)
 # 訓練模型
 print("Start Training")
 
-model.fit(
-    data,
-    target,
-    epochs=650,
-    batch_size=21,
-    verbose=1,
-    # callbacks=[evaluator]
-)
+model.fit(data, target, epochs=650, batch_size=21, verbose=1, callbacks=[evaluator])
 
 evaluateModel(model)
 

@@ -188,6 +188,8 @@ with mpHandsSolution.Hands(
 
         if cv2.waitKey(5) == ord("q") or cv2.waitKey(5) == ord("Q"):
             break  # 按下 q 鍵停止
+        if cv2.getWindowProperty("hand tracker", cv2.WND_PROP_VISIBLE) < 1:
+            break
 
 featuresString = str(featurePerProcess)
 # 10 15 10
