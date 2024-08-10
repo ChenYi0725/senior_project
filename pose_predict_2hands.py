@@ -15,7 +15,7 @@ mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 lstmModel = keras.models.load_model("lstm_2hand_model.keras")
 showResult = "wait"
-predictFrequence = 3
+predictFrequence = 1
 predictCount = 0
 hands = mpHandsSolution.Hands(
     model_complexity=0,
@@ -141,7 +141,7 @@ def combineAndPredict(currentFeature):
     global continuousFeature
     global predictCount
     global predictFrequence
-
+    featureNumber = 84
     if len(continuousFeature) < 21:
         continuousFeature.append(currentFeature)
     else:
@@ -150,14 +150,17 @@ def combineAndPredict(currentFeature):
 
         # 確保 continuousFeature 是一個形狀一致的 NumPy 陣列
         continuousFeature_np = np.array(continuousFeature)
+        print(continuousFeature_np.shape)
         predictCount = predictCount + 1
         if predictCount == predictFrequence:
             predictCount = 0
-            if continuousFeature_np.shape == (21, len(currentFeature)):
+            if continuousFeature_np.shape == (21, 84):
                 predictedResult, probabilities = predict(continuousFeature_np)
                 return predictedResult, probabilities
             else:
                 print("continuousFeature 形狀錯誤，跳過預測")
+                continuousFeature = []
+                predictCount = 0
 
     return 13, 0
 
