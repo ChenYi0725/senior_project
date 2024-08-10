@@ -109,7 +109,7 @@ def combineAndPredict(currentFeature):
     global continuousFeature
     global predictCount
     global predictFrequence
-
+    featureNumber = 84
     if len(continuousFeature) < 21:
         continuousFeature.append(currentFeature)
     else:
@@ -121,11 +121,13 @@ def combineAndPredict(currentFeature):
         predictCount = predictCount + 1
         if predictCount == predictFrequence:
             predictCount = 0
-            if continuousFeature_np.shape == (21, len(currentFeature)):
+            if continuousFeature_np.shape == (21, featureNumber):
                 predictedResult, probabilities = predict(continuousFeature_np)
                 return predictedResult, probabilities
             else:
                 print("continuousFeature 形狀錯誤，跳過預測")
+                continuousFeature = []
+                predictCount = 0
 
     return 13, 0
 
