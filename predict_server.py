@@ -60,6 +60,7 @@ def imageHandPosePredict(RGBImage):
     global showResult
     global predictCount
     global hands
+    global lastResult
     if not hasattr(imageHandPosePredict, "missCounter"):
         imageHandPosePredict.missCounter = 0
 
@@ -114,6 +115,7 @@ def combineAndPredict(currentFeature):
         continuousFeature.append(currentFeature)
     else:
         del continuousFeature[0]
+
         continuousFeature.append(currentFeature)
 
         # 確保 continuousFeature 是一個形狀一致的 NumPy 陣列
