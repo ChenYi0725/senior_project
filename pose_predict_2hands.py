@@ -107,12 +107,6 @@ def blockTheReverseMove(lastCode, currentCode):
 
 def drawResultOnImage(image, resultCode, probabilities):
     global showResult
-
-    # if probabilities > 0.7:
-    #     lastCode = getResultIndex(showResult)
-    #     resultCode = blockTheReverseMove(lastCode, resultCode)
-    #     result = decodedResult(resultCode)
-    #     showResult = str(result)
     result = decodedResult(resultCode)
     showResult = str(result)
     probabilities = str(probabilities)
@@ -142,6 +136,8 @@ def combineAndPredict(currentFeature):
     global predictCount
     global predictFrequence
     featureNumber = 84
+
+
     if len(continuousFeature) < 21:
         continuousFeature.append(currentFeature)
     else:
@@ -149,8 +145,10 @@ def combineAndPredict(currentFeature):
         continuousFeature.append(currentFeature)
 
         # 確保 continuousFeature 是一個形狀一致的 NumPy 陣列
-        continuousFeature_np = np.array(continuousFeature)
-        print(continuousFeature_np.shape)
+        print(len(continuousFeature))
+        print(len(continuousFeature[0]))
+        continuousFeature_np = np.array(continuousFeature, dtype="float")
+
         predictCount = predictCount + 1
         if predictCount == predictFrequence:
             predictCount = 0
@@ -244,14 +242,15 @@ def imageHandPosePredict(RGBImage):
     if isBothExist(results):
         imageHandPosePredict.missCounter = 0  # miss
         currentFeature = recorder.record2HandPerFrame(results)
-        predictedResult, probabilities = combineAndPredict(currentFeature)
-        if probabilities > 0.7:
-            if predictedResult < 13 and predictedResult // 2 == lastResult // 2:
-                predictedResult = lastResult  # block reverse move
+        if len(currentFeature) == 84: 
+            predictedResult, probabilities = combineAndPredict(currentFeature)
+            if probabilities > 0.7:
+                if predictedResult < 13 and predictedResult // 2 == lastResult // 2:
+                    predictedResult = lastResult  # block reverse move
+                else:
+                    lastResult = predictedResult
             else:
-                lastResult = predictedResult
-        else:
-            predictedResult = lastResult
+                predictedResult = lastResult
 
     else:
         if missCounter >= maxMissCounter:
@@ -291,5 +290,7 @@ while True:
     if cv2.getWindowProperty("hand tracker", cv2.WND_PROP_VISIBLE) < 1:
         break
 
+
 frameReceiver.camera.release()
 cv2.destroyAllWindows()
+print(continuousFeature)
