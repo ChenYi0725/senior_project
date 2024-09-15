@@ -23,7 +23,7 @@ class ModelEvaluator(Callback):
 
     def on_train_end(self, logs=None):
         self.drawLossFunction()
-        self.drawConfusionMatrix()
+        # self.drawConfusionMatrix()
 
     def drawLossFunction(self, logs={}):
         # 繪製損失值圖表

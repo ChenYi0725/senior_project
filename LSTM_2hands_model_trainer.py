@@ -6,6 +6,8 @@ import numpy as np
 import tools.ctc_loss_function as CTC
 import tools.model_evaluator as me
 
+timeSteps = 21
+features = 60
 dataLengthList = []
 organizer = do.DataOrganizer()
 CTCLoss = CTC.CTCLoss()
@@ -30,8 +32,10 @@ evaluator = me.ModelEvaluator(labels)
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
     global dataLengthList
     inputList = np.array(inputList)
-    dataLengthList.append(len(inputList))
     inputList = organizer.preprocessingData(inputList)
+    print(f"init data len{inputList.shape}")
+    dataLengthList.append(len(inputList))
+
     return inputList
 
 
@@ -98,6 +102,8 @@ topLeftData = initData(topLeftData)
 topRightData = initData(topRightData)
 stopData = initData(stopData)
 # =====================
+
+# ====================
 data = np.concatenate(
     (
         backClockwiseData,
@@ -117,8 +123,9 @@ data = np.concatenate(
     axis=0,
 )
 
+print(data.shape)
 
-print(f"whole:{len(data)}")
+print(f"data len:{len(data)}")
 # ----------------------訓練集label 0 開始
 target = np.zeros(len(data))  # total
 targetPointer = 0
@@ -142,7 +149,7 @@ model.add(
     keras.layers.LSTM(
         units=256,
         activation="tanh",
-        input_shape=(21, 84),
+        input_shape=(timeSteps, features),
         kernel_regularizer=regularizers.l2(0.01),
     )
 )
@@ -154,36 +161,36 @@ model.compile(
     # loss=CTCLoss,
     metrics=["accuracy"],
 )
+# =================
+# weights = model.layers[0].get_weights()  # 改權重
 
-weights = model.layers[0].get_weights()  # 改權重
+# thumb = [4, 5, 6, 7, 8, 9]
+# indexFinger = [12, 13, 14, 15, 16, 17]
+# middleFinger = [20, 21, 22, 23, 24, 25]
+# ringFinger = [28, 29, 30, 31, 32, 33]
+# littleFinger = [36, 37, 38, 39, 40, 41]
+# palm = [0, 1, 2, 3, 10, 11, 18, 19, 26, 27, 34, 35]
 
-thumb = [4, 5, 6, 7, 8, 9]
-indexFinger = [12, 13, 14, 15, 16, 17]
-middleFinger = [20, 21, 22, 23, 24, 25]
-ringFinger = [28, 29, 30, 31, 32, 33]
-littleFinger = [36, 37, 38, 39, 40, 41]
-palm = [0, 1, 2, 3, 10, 11, 18, 19, 26, 27, 34, 35]
+# thumb = expandTo2Hands(thumb)
+# indexFinger = expandTo2Hands(indexFinger)
+# middleFinger = expandTo2Hands(middleFinger)
+# ringFinger = expandTo2Hands(ringFinger)
+# littleFinger = expandTo2Hands(littleFinger)
+# palm = expandTo2Hands(palm)
 
-thumb = expandTo2Hands(thumb)
-indexFinger = expandTo2Hands(indexFinger)
-middleFinger = expandTo2Hands(middleFinger)
-ringFinger = expandTo2Hands(ringFinger)
-littleFinger = expandTo2Hands(littleFinger)
-palm = expandTo2Hands(palm)
+# weights[0][:, thumb] *= 0.5
+# weights[0][:, indexFinger] *= 1
+# weights[0][:, middleFinger] *= 0.5
+# weights[0][:, ringFinger] *= 1
+# weights[0][:, littleFinger] *= 1
+# weights[0][:, palm] *= 0
+# # weights[0] 為權重矩陣
+# # 左手 前42
+# # 食指、無名指、小指 => 2
+# # 拇指、中指 => 1
+# # 手掌、手腕 => 0  0 1 5 9 13 17
 
-weights[0][:, thumb] *= 0.5
-weights[0][:, indexFinger] *= 1
-weights[0][:, middleFinger] *= 0.5
-weights[0][:, ringFinger] *= 1
-weights[0][:, littleFinger] *= 1
-weights[0][:, palm] *= 0
-# weights[0] 為權重矩陣
-# 左手 前42
-# 食指、無名指、小指 => 2
-# 拇指、中指 => 1
-# 手掌、手腕 => 0  0 1 5 9 13 17
-
-model.layers[0].set_weights(weights)
+# model.layers[0].set_weights(weights)
 # ===========================================
 # 訓練模型
 print("Start Training")
@@ -191,9 +198,9 @@ print("Start Training")
 model.fit(data, target, epochs=650, batch_size=21, verbose=1, callbacks=[evaluator])
 
 evaluateModel(model)
-
+print("save model")
 # 輸出模型
-exportSavedModelAndTflite(model)
+# exportSavedModelAndTflite(model)
 model.save("lstm_2hand_model.keras")
 model.save("lstm_2hand_model.h5")
 print("finish")
