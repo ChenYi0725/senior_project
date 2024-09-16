@@ -271,7 +271,7 @@ ctcModel.fit(  # 收到none 值，尚未找出原因->遞迴測labels, inputLeng
     callbacks=[evaluator],
 )
 
-evaluateModel(ctcModel, data, labels, inputLength, labelLength)
+# evaluateModel(ctcModel, data, labels, inputLength, labelLength)
 print("save model")
 # 輸出模型
 # exportSavedModelAndTflite(model)
