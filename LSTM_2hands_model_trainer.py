@@ -240,19 +240,11 @@ print("inputLength example:", inputLength[:10])
 print("labelLength example:", labelLength[:10])
 # 修改形狀====================
 labels = np.expand_dims(labels, -1)
-# labels = tf.keras.utils.to_categorical(labels, num_classes=output + 1)
-target_shape = (labels.shape[0], output + 1)  # (13000, 14)
-labels = np.pad(
-    labels,
-    ((0, 0), (0, target_shape[1] - labels.shape[1])),
-    mode="constant",
-    constant_values=0,
-)
+target_shape = (labels.shape[0], output + 1)
+padded_labels = np.full(target_shape, labels[:, 0:1], dtype=labels.dtype)
+padded_labels[:, :labels.shape[1]] = labels
+labels = padded_labels
 
-
-labelString  = str(labels)
-with open("result.txt", "w") as f:
-    f.write(labelString)
 
 
 inputLength = np.expand_dims(
@@ -263,11 +255,11 @@ labelLength = np.expand_dims(
 )  # (13000, 1)
 
 # 驗證形狀
-print("data shape:", data.shape)
-print("labels shape:", labels.shape)  # 應該要是(13000, 14)
-print("inputLength shape:", inputLength.shape)
-print("labelLength shape:", labelLength.shape)
-# print(labels)
+# print("data shape:", data.shape)
+# print("labels shape:", labels.shape)  # 應該要是(13000, 14)
+# print("inputLength shape:", inputLength.shape)
+# print("labelLength shape:", labelLength.shape)
+
 
 # =================
 ctcModel.fit(  # 收到none 值，尚未找出原因->遞迴測labels, inputLength, labelLength
