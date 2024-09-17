@@ -21,7 +21,10 @@ frameReceiver = camera.Camera()
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
+print("loading model")
 lstmModel = keras.models.load_model("lstm_2hand_model.keras")
+print("finish loading")
+
 showResult = "wait"
 predictFrequence = 1
 predictCount = 0

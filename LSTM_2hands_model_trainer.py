@@ -265,7 +265,7 @@ labelLength = np.expand_dims(
 ctcModel.fit(  # 收到none 值，尚未找出原因->遞迴測labels, inputLength, labelLength
     [data, labels, inputLength, labelLength],
     np.zeros(len(data)),
-    epochs=650,
+    epochs = 350,
     batch_size=21,
     verbose=1,
     callbacks=[evaluator],
