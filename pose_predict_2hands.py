@@ -6,6 +6,14 @@ import tools.camera as camera
 import tools.recorder as rd
 import keras
 import time
+import tensorflow as tf
+
+# from LSTM_2hands_model_trainer import ctcLossFunction
+
+
+def ctcLossFunction(args):
+    yPred, labels, inputLength, labelLength = args
+    return tf.keras.backend.ctc_batch_cost(labels, yPred, inputLength, labelLength)
 
 
 recorder = rd.Recorder()
@@ -21,10 +29,19 @@ frameReceiver = camera.Camera()
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
+print()
+print()
+print()
 print("loading model")
-lstmModel = keras.models.load_model("lstm_2hand_model.keras")
+lstmModel = keras.models.load_model(
+    "lstm_2hand_model.keras",
+    custom_objects={"ctcLossFunction": ctcLossFunction},
+    compile=False,
+)
 print("finish loading")
-
+print()
+print()
+print()
 showResult = "wait"
 predictFrequence = 1
 predictCount = 0
@@ -87,7 +104,9 @@ def predict(continuousFeature):
     startTime = time.time()
     predictData = organizer.preprocessingData(predictData)
     prerocessTime = time.time()
+    print("predicting", end="\n\n\n\n\n\n\n\n\n\n\n\n\n")
     prediction = lstmModel.predict(predictData, verbose=0)
+    print("predicting", end="\n\n\n\n\n\n\n\n\n\n\n\n\n")
     predictedResult = np.argmax(prediction, axis=1)[0]
     predictTime = time.time()
     probabilities = prediction[0][predictedResult]

@@ -242,9 +242,8 @@ print("labelLength example:", labelLength[:10])
 labels = np.expand_dims(labels, -1)
 target_shape = (labels.shape[0], output + 1)
 padded_labels = np.full(target_shape, labels[:, 0:1], dtype=labels.dtype)
-padded_labels[:, :labels.shape[1]] = labels
+padded_labels[:, : labels.shape[1]] = labels
 labels = padded_labels
-
 
 
 inputLength = np.expand_dims(
@@ -265,7 +264,7 @@ labelLength = np.expand_dims(
 ctcModel.fit(  # 收到none 值，尚未找出原因->遞迴測labels, inputLength, labelLength
     [data, labels, inputLength, labelLength],
     np.zeros(len(data)),
-    epochs = 350,
+    epochs=350,
     batch_size=21,
     verbose=1,
     callbacks=[evaluator],
