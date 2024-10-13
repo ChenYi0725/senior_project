@@ -38,6 +38,7 @@ lstmModel = keras.models.load_model(
     custom_objects={"ctcLossFunction": ctcLossFunction},
     compile=False,
 )
+print(lstmModel.summary())
 print("finish loading")
 print()
 print()
@@ -105,8 +106,8 @@ def predict(continuousFeature):
     predictData = organizer.preprocessingData(predictData)
     prerocessTime = time.time()
     print("predicting", end="\n\n\n\n\n\n\n\n\n\n\n\n\n")
-    prediction = lstmModel.predict(predictData, verbose=0)
-    print("predicting", end="\n\n\n\n\n\n\n\n\n\n\n\n\n")
+    prediction = lstmModel.predict(predictData, verbose=0)  # error
+    print("finish predict", end="\n\n\n\n\n\n\n\n\n\n\n\n\n")
     predictedResult = np.argmax(prediction, axis=1)[0]
     predictTime = time.time()
     probabilities = prediction[0][predictedResult]
@@ -132,8 +133,8 @@ def drawResultOnImage(image, resultCode, probabilities):
     probabilities = str(probabilities)
     cv2.putText(
         image,
-        probabilities,
-        (image.shape[1] - 600, 150),
+        f"probabilities:{probabilities}",
+        (image.shape[1] - 620, 150),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
         (255, 0, 0),
@@ -142,7 +143,16 @@ def drawResultOnImage(image, resultCode, probabilities):
     cv2.putText(
         image,
         showResult,
-        (image.shape[1] - 600, 100),
+        (image.shape[1] - 620, 100),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (255, 0, 0),
+        2,
+    )
+    cv2.putText(
+        image,
+        f"timeSteps{len(continuousFeature)}",
+        (image.shape[1] - 620, 200),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
         (255, 0, 0),
