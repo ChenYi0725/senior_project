@@ -33,15 +33,17 @@ print()
 print()
 print()
 print("loading model")
-# lstmModel = keras.models.load_model(
-#     "the_precious_working_model/lstm_2hand_model.keras",
-#     custom_objects={"ctcLossFunction": ctcLossFunction},
-#     compile=False,
-# )
+
 lstmModel = keras.models.load_model(
-    "the_precious_working_model/lstm_2hand_model.keras",
+    "the_precious_working_model/lstm_2hand_noCTC_model.h5",
+    custom_objects={"ctcLossFunction": ctcLossFunction},
     compile=False,
 )
+# lstmModel = keras.models.load_model(
+#     "the_precious_working_model/lstm_2hand_model.keras",
+#     # compile=False,
+# )
+print(lstmModel.summary())
 
 print("finish loading")
 print()
