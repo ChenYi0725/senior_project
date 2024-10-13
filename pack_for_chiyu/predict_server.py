@@ -11,7 +11,7 @@ organizer = do.DataOrganizer()
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
-lstmModel = keras.models.load_model("lstm_2hand_model.keras")
+lstmModel = keras.models.load_model("lstm_2hand_noCTC_60Features.keras")
 showResult = "wait"
 predictFrequence = 3
 predictCount = 0
@@ -63,14 +63,14 @@ def imageHandPosePredict(RGBImage):
     global lastResult
     if not hasattr(imageHandPosePredict, "missCounter"):
         imageHandPosePredict.missCounter = 0
-
     results = hands.process(RGBImage)  # 偵測手掌
+
     predictedResult = 13
     probabilities = 0
     if isBothExist(results):
         imageHandPosePredict.missCounter = 0  # miss
         currentFeature = recorder.record2HandPerFrame(results)
-        if len(currentFeature) == 84:  # 確認為84個特徵
+        if len(currentFeature) == 84:  # 確認為fearures個特徵
             predictedResult, probabilities = combineAndPredict(currentFeature)
             if probabilities > 0.7:
                 if predictedResult < 13 and predictedResult // 2 == lastResult // 2:
@@ -87,7 +87,7 @@ def imageHandPosePredict(RGBImage):
             predictCount = 0
         else:
             imageHandPosePredict.missCounter = imageHandPosePredict.missCounter + 1
-    return predictedResult, probabilities
+    return predictedResult, probabilities, results
 
 
 def isBothExist(results):
@@ -112,18 +112,19 @@ def combineAndPredict(currentFeature):
     global continuousFeature
     global predictCount
     global predictFrequence
-    featureNumber = 84
+
     if len(continuousFeature) < 21:
         continuousFeature.append(currentFeature)
     else:
         del continuousFeature[0]
-
         continuousFeature.append(currentFeature)
-        continuousFeature_np = np.array(continuousFeature)
+        continuousFeature_np = np.array(continuousFeature, dtype="float")
+
         predictCount = predictCount + 1
         if predictCount == predictFrequence:
             predictCount = 0
             predictedResult, probabilities = predict(continuousFeature_np)
+
             return predictedResult, probabilities
 
     return 13, 0
@@ -131,15 +132,17 @@ def combineAndPredict(currentFeature):
 
 def predict(continuousFeature):
     continuousFeature = np.array(continuousFeature)
-    continuousFeature = (continuousFeature - continuousFeature.min()) / (
-        continuousFeature.max() - continuousFeature.min()
-    )
-    predictData = np.expand_dims(continuousFeature, axis=0)  # (1, 21, 84)
+    predictData = np.expand_dims(continuousFeature, axis=0)  # (1, timeSteps, features)
 
     # 進行預測
+
     predictData = organizer.preprocessingData(predictData)
-    prediction = lstmModel.predict(predictData, verbose=0)
-    predictedResult = np.argmax(prediction, axis=1)[0]  # 確保predictedResult是一個整數
+
+    print("predicting", end="\n")
+    prediction = lstmModel.predict(predictData, verbose=0)  # error
+    print("finish predict", end="\n")
+    predictedResult = np.argmax(prediction, axis=1)[0]
+
     probabilities = prediction[0][predictedResult]
     return predictedResult, probabilities
 
