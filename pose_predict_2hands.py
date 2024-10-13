@@ -16,6 +16,20 @@ def ctcLossFunction(args):
     return tf.keras.backend.ctc_batch_cost(labels, yPred, inputLength, labelLength)
 
 
+def chooseLoadingModel(choose):
+    if choose == "lstm_2hand_noCTC_60Features.keras":
+        lstmModel = keras.models.load_model(
+            "the_precious_working_model/lstm_2hand_noCTC_60Features.keras",
+        )
+    elif choose == "lstm_2hand_model.h5":
+        lstmModel = keras.models.load_model(
+            "lstm_2hand_model.h5",
+            custom_objects={"ctcLossFunction": ctcLossFunction},
+            compile=False,
+        )
+    return lstmModel
+
+
 recorder = rd.Recorder()
 organizer = do.DataOrganizer()
 # def warm_up():
@@ -29,26 +43,14 @@ frameReceiver = camera.Camera()
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
-print()
-print()
-print()
+
 print("loading model")
 
-lstmModel = keras.models.load_model(
-    "the_precious_working_model/lstm_2hand_noCTC_model.h5",
-    custom_objects={"ctcLossFunction": ctcLossFunction},
-    compile=False,
-)
-# lstmModel = keras.models.load_model(
-#     "the_precious_working_model/lstm_2hand_model.keras",
-#     # compile=False,
-# )
+lstmModel = chooseLoadingModel("lstm_2hand_noCTC_60Features.keras")
 print(lstmModel.summary())
 
 print("finish loading")
-print()
-print()
-print()
+
 showResult = "wait"
 predictFrequence = 1
 predictCount = 0
@@ -111,14 +113,12 @@ def predict(continuousFeature):
     startTime = time.time()
     predictData = organizer.preprocessingData(predictData)
     prerocessTime = time.time()
-    print("predicting", end="\n\n\n\n\n\n\n\n\n\n\n\n\n")
+    print("predicting", end="\n")
     prediction = lstmModel.predict(predictData, verbose=0)  # error
-    print("finish predict", end="\n\n\n\n\n\n\n\n\n\n\n\n\n")
+    print("finish predict", end="\n")
     predictedResult = np.argmax(prediction, axis=1)[0]
     predictTime = time.time()
     probabilities = prediction[0][predictedResult]
-    print(f"prerocessTime:{prerocessTime - startTime}")
-    print(f"predictTime:{predictTime-prerocessTime}")
     return predictedResult, probabilities
 
 
@@ -268,7 +268,6 @@ def imageHandPosePredict(RGBImage):
     handStartTime = time.time()
     results = hands.process(RGBImage)  # 偵測手掌
     handEndTime = time.time()
-    print(f"hand:{handEndTime - handStartTime}")
 
     predictedResult = 13
     probabilities = 0
