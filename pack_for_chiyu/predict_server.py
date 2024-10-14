@@ -67,7 +67,7 @@ def imageHandPosePredict(RGBImage):
 
     predictedResult = 13
     probabilities = 0
-    if isBothExist(results):
+    if isBothExist(results):  # 有雙手
         imageHandPosePredict.missCounter = 0  # miss
         currentFeature = recorder.record2HandPerFrame(results)
         if len(currentFeature) == 84:  # 確認為fearures個特徵
@@ -81,10 +81,11 @@ def imageHandPosePredict(RGBImage):
                 predictedResult = lastResult
 
     else:
-        if missCounter >= maxMissCounter:
+        if imageHandPosePredict.missCounter >= maxMissCounter:
             continuousFeature = []
             showResult = "wait"
             predictCount = 0
+            print("no 2 hands")
         else:
             imageHandPosePredict.missCounter = imageHandPosePredict.missCounter + 1
     return predictedResult, probabilities, results
@@ -115,17 +116,21 @@ def combineAndPredict(currentFeature):
 
     if len(continuousFeature) < 21:
         continuousFeature.append(currentFeature)
+        # if len(continuousFeature) < 21:
+        #     continuousFeature.append(currentFeature)
     else:
         del continuousFeature[0]
+        # del continuousFeature[0]
+        # continuousFeature.append(currentFeature)
         continuousFeature.append(currentFeature)
         continuousFeature_np = np.array(continuousFeature, dtype="float")
-
         predictCount = predictCount + 1
-        if predictCount == predictFrequence:
-            predictCount = 0
-            predictedResult, probabilities = predict(continuousFeature_np)
-
-            return predictedResult, probabilities
+        if showResult != "stop":
+            if predictCount == predictFrequence:
+                predictCount = 0
+                predictedResult, probabilities = predict(continuousFeature_np)
+                continuousFeature = []
+                return predictedResult, probabilities
 
     return 13, 0
 

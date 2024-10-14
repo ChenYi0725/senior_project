@@ -8,6 +8,7 @@ import keras
 import time
 import tensorflow as tf
 
+
 # from LSTM_2hands_model_trainer import ctcLossFunction
 
 
@@ -45,6 +46,7 @@ mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 
 print("loading model")
+
 
 lstmModel = chooseLoadingModel("lstm_2hand_noCTC_60Features.keras")
 print(lstmModel.summary())
@@ -88,8 +90,8 @@ resultsList = [
     "L ",
     "R ",
     "R'",
-    "U ",
     "U'",
+    "U ",
     "Stop",
     "wait",
 ]
@@ -108,16 +110,10 @@ maxMissCounter = 10
 def predict(continuousFeature):
     continuousFeature = np.array(continuousFeature)
     predictData = np.expand_dims(continuousFeature, axis=0)  # (1, timeSteps, features)
-
     # 進行預測
-    startTime = time.time()
     predictData = organizer.preprocessingData(predictData)
-    prerocessTime = time.time()
-    print("predicting", end="\n")
     prediction = lstmModel.predict(predictData, verbose=0)  # error
-    print("finish predict", end="\n")
     predictedResult = np.argmax(prediction, axis=1)[0]
-    predictTime = time.time()
     probabilities = prediction[0][predictedResult]
     return predictedResult, probabilities
 
@@ -139,8 +135,8 @@ def drawResultOnImage(image, resultCode, probabilities):
     probabilities = str(probabilities)
     cv2.putText(
         image,
-        f"probabilities:{probabilities}",
-        (image.shape[1] - 620, 150),
+        showResult,
+        (image.shape[1] - 620, 100),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
         (255, 0, 0),
@@ -148,8 +144,8 @@ def drawResultOnImage(image, resultCode, probabilities):
     )
     cv2.putText(
         image,
-        showResult,
-        (image.shape[1] - 620, 100),
+        f"probabilities:{probabilities}",
+        (image.shape[1] - 620, 150),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
         (255, 0, 0),
@@ -164,6 +160,16 @@ def drawResultOnImage(image, resultCode, probabilities):
         (255, 0, 0),
         2,
     )
+    cv2.putText(
+        image,
+        f"missCounter{imageHandPosePredict.missCounter}",
+        (image.shape[1] - 620, 250),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (255, 0, 0),
+        2,
+    )
+
     return image
 
 
@@ -182,13 +188,13 @@ def combineAndPredict(currentFeature):
         # continuousFeature.append(currentFeature)
         continuousFeature.append(currentFeature)
         continuousFeature_np = np.array(continuousFeature, dtype="float")
-
         predictCount = predictCount + 1
-        if predictCount == predictFrequence:
-            predictCount = 0
-            predictedResult, probabilities = predict(continuousFeature_np)
-
-            return predictedResult, probabilities
+        if showResult != "stop":
+            if predictCount == predictFrequence:
+                predictCount = 0
+                predictedResult, probabilities = predict(continuousFeature_np)
+                continuousFeature = []
+                return predictedResult, probabilities
 
     return 13, 0
 
@@ -265,13 +271,11 @@ def imageHandPosePredict(RGBImage):
     global lastResult
     if not hasattr(imageHandPosePredict, "missCounter"):
         imageHandPosePredict.missCounter = 0
-    handStartTime = time.time()
     results = hands.process(RGBImage)  # 偵測手掌
-    handEndTime = time.time()
 
     predictedResult = 13
     probabilities = 0
-    if isBothExist(results):
+    if isBothExist(results):  # 有雙手
         imageHandPosePredict.missCounter = 0  # miss
         currentFeature = recorder.record2HandPerFrame(results)
         if len(currentFeature) == 84:  # 確認為fearures個特徵
@@ -285,10 +289,11 @@ def imageHandPosePredict(RGBImage):
                 predictedResult = lastResult
 
     else:
-        if missCounter >= maxMissCounter:
+        if imageHandPosePredict.missCounter >= maxMissCounter:
             continuousFeature = []
             showResult = "wait"
             predictCount = 0
+            print("no 2 hands")
         else:
             imageHandPosePredict.missCounter = imageHandPosePredict.missCounter + 1
     return predictedResult, probabilities, results
