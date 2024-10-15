@@ -112,19 +112,29 @@ def predict(continuousFeature):
     predictData = np.expand_dims(continuousFeature, axis=0)  # (1, timeSteps, features)
     # 進行預測
     predictData = organizer.preprocessingData(predictData)
+
     prediction = lstmModel.predict(predictData, verbose=0)  # error
     predictedResult = np.argmax(prediction, axis=1)[0]
     probabilities = prediction[0][predictedResult]
     return predictedResult, probabilities
 
 
-def blockTheReverseMove(lastCode, currentCode):
-    if not (lastCode == 12 and currentCode == 12):
-        if (lastCode // 2) == (currentCode // 2):
-            return lastCode
-        else:
-            return currentCode
-    return currentCode
+def blockIllegalResult(probabilities, lastResult, currentResult):
+    if probabilities > 0.7:
+        if currentResult in [12, 13]:  # stop, wait 不動
+            return currentResult
+
+        if currentResult == lastResult:  # block same move
+            return 13  # wait
+
+        if lastResult != 12 and (lastResult // 2) == (
+            currentResult // 2
+        ):  # block reverse move
+            return lastResult
+
+        return currentResult
+    else:
+        return lastResult
 
 
 def drawResultOnImage(image, resultCode, probabilities):
@@ -280,20 +290,18 @@ def imageHandPosePredict(RGBImage):
         currentFeature = recorder.record2HandPerFrame(results)
         if len(currentFeature) == 84:  # 確認為fearures個特徵
             predictedResult, probabilities = combineAndPredict(currentFeature)
-            if probabilities > 0.7:
-                if predictedResult < 13 and predictedResult // 2 == lastResult // 2:
-                    predictedResult = lastResult  # block reverse move
-                else:
-                    lastResult = predictedResult
-            else:
-                predictedResult = lastResult
+            predictedResult = blockIllegalResult(
+                probabilities, lastResult, predictedResult
+            )
+            if predictedResult not in [12, 13]:
+                print(resultsList[predictedResult])
 
     else:
         if imageHandPosePredict.missCounter >= maxMissCounter:
             continuousFeature = []
             showResult = "wait"
             predictCount = 0
-            print("no 2 hands")
+
         else:
             imageHandPosePredict.missCounter = imageHandPosePredict.missCounter + 1
     return predictedResult, probabilities, results
