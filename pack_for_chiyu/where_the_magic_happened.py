@@ -214,8 +214,9 @@ def imageHandPosePredict(RGBImage):
             imageHandPosePredict.handMovingPassCount = 0
         else:
             imageHandPosePredict.missCounter += 1
+    resultString = resultsList[predictedResult]
+    return resultString,probabilities
 
-    return predictedResult, probabilities
 
 
 
