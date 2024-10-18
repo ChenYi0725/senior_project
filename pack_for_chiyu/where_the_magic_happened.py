@@ -200,9 +200,10 @@ def imageHandPosePredict(RGBImage):
                 probabilities, lastResult, predictedResult
             )
             if predictedResult not in [12, 13]:
-                print(resultsList[predictedResult])
-            # if not predictedResult == 13:
+                predictedResult = resultsList[predictedResult]
             #     print(resultsList[predictedResult])
+            # # if not predictedResult == 13:
+            # #     print(resultsList[predictedResult])
 
     else:
         if imageHandPosePredict.missCounter >= maxMissCounter:
