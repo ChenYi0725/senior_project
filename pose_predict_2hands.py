@@ -45,13 +45,7 @@ mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 
-print("loading model")
-
-
 lstmModel = chooseLoadingModel("lstm_2hand_noCTC_60Features.keras")
-print(lstmModel.summary())
-
-print("finish loading")
 
 showResult = "wait"
 predictFrequence = 1
@@ -88,8 +82,8 @@ resultsList = [
     "F'",
     "L'",
     "L ",
-    "R ",
     "R'",
+    "R ",
     "U'",
     "U ",
     "Stop",
@@ -113,7 +107,7 @@ def predict(continuousFeature):
     # 進行預測
     predictData = organizer.preprocessingData(predictData)
 
-    prediction = lstmModel.predict(predictData, verbose=0)  # error
+    prediction = lstmModel.predict(predictData, verbose=0)
     predictedResult = np.argmax(prediction, axis=1)[0]
     probabilities = prediction[0][predictedResult]
     return predictedResult, probabilities
@@ -140,6 +134,7 @@ def blockIllegalResult(probabilities, lastResult, currentResult):
 def drawResultOnImage(image, resultCode, probabilities):
     global showResult
     global resultsList
+    global continuousFeature
     result = resultsList[resultCode]
     showResult = str(result)
     probabilities = str(probabilities)
@@ -181,6 +176,48 @@ def drawResultOnImage(image, resultCode, probabilities):
     )
 
     return image
+
+
+def isHandMoving(results):
+    global continuousFeature
+    if not hasattr(isHandMoving, "lastFingertips"):
+        isHandMoving.lastFingertips = []
+    threshold = [0.02, 0.08]
+    fingertipsNodes = [8, 12, 16]  # 4,20
+
+    leftFingertips = []
+    rightFingertips = []
+    if results.multi_hand_landmarks:
+        for handLandmarks, handed in zip(
+            results.multi_hand_landmarks, results.multi_handedness
+        ):
+            if handed.classification[0].label == "Left":
+                leftWrist = [
+                    handLandmarks.landmark[0].x,
+                    handLandmarks.landmark[0].y,
+                ]
+                for i in fingertipsNodes:
+                    leftFingertips.append(handLandmarks.landmark[i].x)
+                    leftFingertips.append(handLandmarks.landmark[i].y)
+            elif handed.classification[0].label == "Right":
+                for i in fingertipsNodes:
+                    rightFingertips.append(handLandmarks.landmark[i].x)
+                    rightFingertips.append(handLandmarks.landmark[i].y)
+    currentFingertips = leftFingertips + rightFingertips
+    for i in range(len(currentFingertips)):
+        currentFingertips[i] = currentFingertips[i] - leftWrist[i % 2]
+    currentFingertips = organizer.normalizedOneDimensionList(currentFingertips)
+
+    if len(isHandMoving.lastFingertips) > 0:
+        for i in range(len(currentFingertips)):
+            fingertipsSAD = abs(currentFingertips[i] - isHandMoving.lastFingertips[i])
+            if fingertipsSAD > threshold[i % 2]:
+                print(f"fingertipsSAD:{fingertipsSAD},i:{i}")
+                isHandMoving.lastFingertips = currentFingertips
+                return True
+
+    isHandMoving.lastFingertips = currentFingertips
+    return False
 
 
 def combineAndPredict(currentFeature):
@@ -279,21 +316,41 @@ def imageHandPosePredict(RGBImage):
     global predictCount
     global hands
     global lastResult
+
+    # 初始化靜態變數
     if not hasattr(imageHandPosePredict, "missCounter"):
-        imageHandPosePredict.missCounter = 0
+        imageHandPosePredict.missCounter = 0  # 用於計算沒有雙手的次數
+    if not hasattr(imageHandPosePredict, "handMovingPassCount"):
+        imageHandPosePredict.handMovingPassCount = 0  # 用於計算免檢查通行次數
+
     results = hands.process(RGBImage)  # 偵測手掌
 
     predictedResult = 13
     probabilities = 0
-    if isBothExist(results):  # 有雙手
-        imageHandPosePredict.missCounter = 0  # miss
+
+    if isBothExist(results):  # 如果有雙手
+        imageHandPosePredict.missCounter = 0
         currentFeature = recorder.record2HandPerFrame(results)
-        if len(currentFeature) == 84:  # 確認為fearures個特徵
+
+        if imageHandPosePredict.handMovingPassCount == 0:
+            if isHandMoving(results):
+                imageHandPosePredict.handMovingPassCount = timeSteps
+            else:
+                continuousFeature = []
+                pass
+        else:
+            imageHandPosePredict.handMovingPassCount -= 1
+
+        if (
+            len(currentFeature) == 84 and imageHandPosePredict.handMovingPassCount > 0
+        ):  # 確認為特徵的數量
             predictedResult, probabilities = combineAndPredict(currentFeature)
             predictedResult = blockIllegalResult(
                 probabilities, lastResult, predictedResult
             )
-            if predictedResult not in [12, 13]:
+            # if predictedResult not in [12, 13]:
+            #     print(resultsList[predictedResult])
+            if not predictedResult == 13:
                 print(resultsList[predictedResult])
 
     else:
@@ -301,11 +358,15 @@ def imageHandPosePredict(RGBImage):
             continuousFeature = []
             showResult = "wait"
             predictCount = 0
-
+            isHandMoving.lastFingertips = []
+            imageHandPosePredict.handMovingPassCount = 0
         else:
-            imageHandPosePredict.missCounter = imageHandPosePredict.missCounter + 1
+            imageHandPosePredict.missCounter += 1
+
     return predictedResult, probabilities, results
 
+
+# =======================================================
 
 while True:
     if not frameReceiver.camera.isOpened():

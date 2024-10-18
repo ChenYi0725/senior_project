@@ -52,6 +52,47 @@ continuousFeature = []  # 目前抓到的前面
 missCounter = 0
 maxMissCounter = 10
 
+def isHandMoving(results):
+    global continuousFeature
+    if not hasattr(isHandMoving, "lastFingertips"):
+        isHandMoving.lastFingertips = []
+    threshold = [0.02, 0.08]
+    fingertipsNodes = [8, 12, 16]  # 4,20
+
+    leftFingertips = []
+    rightFingertips = []
+    if results.multi_hand_landmarks:
+        for handLandmarks, handed in zip(
+            results.multi_hand_landmarks, results.multi_handedness
+        ):
+            if handed.classification[0].label == "Left":
+                leftWrist = [
+                    handLandmarks.landmark[0].x,
+                    handLandmarks.landmark[0].y,
+                ]
+                for i in fingertipsNodes:
+                    leftFingertips.append(handLandmarks.landmark[i].x)
+                    leftFingertips.append(handLandmarks.landmark[i].y)
+            elif handed.classification[0].label == "Right":
+                for i in fingertipsNodes:
+                    rightFingertips.append(handLandmarks.landmark[i].x)
+                    rightFingertips.append(handLandmarks.landmark[i].y)
+    currentFingertips = leftFingertips + rightFingertips
+    for i in range(len(currentFingertips)):
+        currentFingertips[i] = currentFingertips[i] - leftWrist[i % 2]
+    currentFingertips = organizer.normalizedOneDimensionList(currentFingertips)
+
+    if len(isHandMoving.lastFingertips) > 0:
+        for i in range(len(currentFingertips)):
+            fingertipsSAD = abs(currentFingertips[i] - isHandMoving.lastFingertips[i])
+            if fingertipsSAD > threshold[i % 2]:
+                print(f"fingertipsSAD:{fingertipsSAD},i:{i}")
+                isHandMoving.lastFingertips = currentFingertips
+                return True
+
+    isHandMoving.lastFingertips = currentFingertips
+    return False
+
 
 def predict(continuousFeature):
     continuousFeature = np.array(continuousFeature)
@@ -126,32 +167,54 @@ def imageHandPosePredict(RGBImage):
     global predictCount
     global hands
     global lastResult
+
+    # 初始化靜態變數
     if not hasattr(imageHandPosePredict, "missCounter"):
-        imageHandPosePredict.missCounter = 0
+        imageHandPosePredict.missCounter = 0  # 用於計算沒有雙手的次數
+    if not hasattr(imageHandPosePredict, "handMovingPassCount"):
+        imageHandPosePredict.handMovingPassCount = 0  # 用於計算免檢查通行次數
+
     results = hands.process(RGBImage)  # 偵測手掌
 
     predictedResult = 13
     probabilities = 0
-    if isBothExist(results):  # 有雙手
-        imageHandPosePredict.missCounter = 0  # miss
+
+    if isBothExist(results):  # 如果有雙手
+        imageHandPosePredict.missCounter = 0
         currentFeature = recorder.record2HandPerFrame(results)
-        if len(currentFeature) == 84:  # 確認為fearures個特徵
+
+        if imageHandPosePredict.handMovingPassCount == 0:
+            if isHandMoving(results):
+                imageHandPosePredict.handMovingPassCount = timeSteps
+            else:
+                continuousFeature = []
+                pass
+        else:
+            imageHandPosePredict.handMovingPassCount -= 1
+
+        if (
+            len(currentFeature) == 84 and imageHandPosePredict.handMovingPassCount > 0
+        ):  # 確認為特徵的數量
             predictedResult, probabilities = combineAndPredict(currentFeature)
             predictedResult = blockIllegalResult(
                 probabilities, lastResult, predictedResult
             )
             if predictedResult not in [12, 13]:
-                print(f"in fucntion{resultsList[predictedResult]}")
+                print(resultsList[predictedResult])
+            # if not predictedResult == 13:
+            #     print(resultsList[predictedResult])
 
     else:
         if imageHandPosePredict.missCounter >= maxMissCounter:
             continuousFeature = []
             showResult = "wait"
             predictCount = 0
-
+            isHandMoving.lastFingertips = []
+            imageHandPosePredict.handMovingPassCount = 0
         else:
-            imageHandPosePredict.missCounter = imageHandPosePredict.missCounter + 1
-    resultString = resultsList[predictedResult]
-    return resultString,probabilities
+            imageHandPosePredict.missCounter += 1
+
+    return predictedResult, probabilities
+
 
 

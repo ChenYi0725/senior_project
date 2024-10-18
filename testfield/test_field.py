@@ -1,60 +1,34 @@
 import numpy as np
 
-# import tools.data_organizer as do
+l1 = [[[1, 2, 3, 4, 5], [2, 4, 6, 8, 10]], [[2, 3, 4, 5, 6], [5, 6, 7, 8, 9]]]
+l2 = [[[2, 3, 4, 5, 6], [5, 6, 7, 8, 9]], [[1, 2, 3, 4, 5], [2, 3, 4, 5, 6]]]
 
-input_list = []
+all_l = [l1,l2]
 
-for i in range(84):
-    input_list.append(i)
+def getDiff(list):
+    diffs = []
+    for data in list:
+        for ts in range(len(data)-1):
+            for i in range(len(data[ts])):
+                diff = data[ts+1][i] - data[ts][i]
+                diffs.append(diff)
+    return diffs
 
+diffs_l1 = getDiff(l1)
+diffs_l2 = getDiff(l2)
 
-def expandTo2Hands(fingerlist):
-    for i in range(len(fingerlist)):
-        newFeature = fingerlist[i] + 42
-        fingerlist.append(newFeature)
-    return fingerlist
+all_data = [l1,l2]
+all_diff = []
+for data in all_data:
+    all_diff.append(getDiff(data))
 
+all_diff_average = np.mean(all_diff)
+all_data_np = np.array(all_data)
+average_data = np.mean(all_data_np)
+print(all_diff_average)
 
-def removePalmNode(inputList):
-    palm = [0, 1, 2, 3, 10, 11, 18, 19, 26, 27, 34, 35]
-    palm = expandTo2Hands(palm)
-    print(palm)
-    palm.sort(reverse=True)
-    for i in palm:
-        del inputList[i]
-    return inputList
+# average_diff_l1 = np.mean(diffs_l1, axis=0)
+# average_diff_l2 = np.mean(diffs_l2, axis=0)
 
-
-def npPalmRemove(inputList):
-    inputList = np.array(inputList)
-    palm = [
-        0,
-        1,
-        2,
-        3,
-        10,
-        11,
-        18,
-        19,
-        26,
-        27,
-        34,
-        35,
-        42,
-        43,
-        44,
-        45,
-        52,
-        53,
-        60,
-        61,
-        68,
-        69,
-        76,
-        77,
-    ]
-    inputList = np.delete(inputList, palm, axis=0)  # 刪除對應的索引
-    return inputList
-
-
-print(npPalmRemove(inputList=input_list).shape)
+# print("l1中最裡面子list的差值平均值:", average_diff_l1)
+# print("l2中最裡面子list的差值平均值:", average_diff_l2)
