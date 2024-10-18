@@ -178,6 +178,22 @@ def drawResultOnImage(image, resultCode, probabilities):
     return image
 
 
+def getIFinger(i):  # just for testing
+    fingerName = ["index ", "middle ", "ring "]
+    lr = ""
+    xy = ""
+    if i % 2 == 0:
+        xy = "x "
+    else:
+        xy = "y "
+    if i > 5:
+        lr = "right "
+    else:
+        lr = "left "
+    finger = fingerName[int((i % 6) / 2)]
+    return lr + finger + xy
+
+
 def isHandMoving(results):
     global continuousFeature
     if not hasattr(isHandMoving, "lastFingertips"):
@@ -212,7 +228,7 @@ def isHandMoving(results):
         for i in range(len(currentFingertips)):
             fingertipsSAD = abs(currentFingertips[i] - isHandMoving.lastFingertips[i])
             if fingertipsSAD > threshold[i % 2]:
-                print(f"fingertipsSAD:{fingertipsSAD},i:{i}")
+                # print(f"fingertipsSAD:{fingertipsSAD},from:{getIFinger(i)}")
                 isHandMoving.lastFingertips = currentFingertips
                 return True
 
