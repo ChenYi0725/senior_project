@@ -7,7 +7,8 @@ import tools.recorder as rd
 import keras
 import time
 import tensorflow as tf
-
+from keras import regularizers
+from keras import layers
 
 # from LSTM_2hands_model_trainer import ctcLossFunction
 
@@ -45,8 +46,24 @@ mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 
-lstmModel = chooseLoadingModel("lstm_2hand_noCTC_60Features.keras")
+#----
+output= 13
+inputs = layers.Input(shape=(21, features), name="input")
+lstmLayer = layers.Bidirectional(
+    layers.LSTM(
+        256,
+        activation="tanh",
+        kernel_regularizer=regularizers.l2(0.01),
+        return_sequences=True,
+    )
+)(inputs)
+lstmLayer = layers.Dense(output + 1, activation="softmax")(lstmLayer)
+lstmModel = keras.Model(inputs, lstmLayer)
+# lstmModel.load_weights("lstm_2hand_model.keras")
+#----
 
+# lstmModel = chooseLoadingModel("lstm_2hand_noCTC_60Features.keras") #註解以使用純lstm
+lstmModel = chooseLoadingModel("lstm_2hand_noCTC_60Features.keras")
 showResult = "wait"
 predictFrequence = 1
 predictCount = 0
@@ -126,6 +143,7 @@ def blockIllegalResult(probabilities, lastResult, currentResult):
         ):  # block reverse move
             return lastResult
 
+
         return currentResult
     else:
         return lastResult
@@ -198,6 +216,9 @@ def isHandMoving(results):
     global continuousFeature
     if not hasattr(isHandMoving, "lastFingertips"):
         isHandMoving.lastFingertips = []
+    if not hasattr(isHandMoving, "lastFingertips2"):
+        isHandMoving.lastFingertips2 = []
+
     threshold = [0.02, 0.08]
     fingertipsNodes = [8, 12, 16]  # 4,20
 
@@ -232,6 +253,12 @@ def isHandMoving(results):
                 isHandMoving.lastFingertips = currentFingertips
                 return True
 
+
+
+    if len(isHandMoving.lasFingertips2) ==0:
+        isHandMoving.lastFingertips2 = currentFeature
+    else:
+        isHandMoving.lastFingertips2 = isHandMoving.lastFingertips
     isHandMoving.lastFingertips = currentFingertips
     return False
 
@@ -349,8 +376,11 @@ def imageHandPosePredict(RGBImage):
         currentFeature = recorder.record2HandPerFrame(results)
 
         if imageHandPosePredict.handMovingPassCount == 0:
-            if isHandMoving(results):
+            if isHandMoving(results):   # 如果計數器為0且手動了，開始記錄
                 imageHandPosePredict.handMovingPassCount = timeSteps
+                if len(continuousFeature) == 0:
+                    continuousFeature.append(isHandMoving.lastFingertips)   # 檢查是否重複append lastFingertips，此處有空可以重構
+                    continuousFeature.append(isHandMoving.lastFingertips2)
             else:
                 continuousFeature = []
                 pass
@@ -375,6 +405,7 @@ def imageHandPosePredict(RGBImage):
             showResult = "wait"
             predictCount = 0
             isHandMoving.lastFingertips = []
+            isHandMoving.lastFingertips2 = []
             imageHandPosePredict.handMovingPassCount = 0
         else:
             imageHandPosePredict.missCounter += 1

@@ -37,14 +37,7 @@ lstmLayer = layers.Bidirectional(
         return_sequences=True,
     )
 )(inputs)
-lstmLayer = layers.Bidirectional(
-    layers.LSTM(
-        256,
-        activation="tanh",
-        kernel_regularizer=regularizers.l2(0.01),
-        return_sequences=True,
-    )
-)(lstmLayer)
+
 lstmLayer = layers.Dense(output + 1, activation="softmax")(lstmLayer)
 lstmModel = keras.Model(inputs, lstmLayer)
 
