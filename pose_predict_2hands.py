@@ -46,9 +46,9 @@ mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 
-#----
-output= 13
-inputs = layers.Input(shape=(21, features), name="input")
+# ----
+output = 13
+inputs = layers.Input(shape=(timeSteps, features), name="input")
 lstmLayer = layers.Bidirectional(
     layers.LSTM(
         256,
@@ -60,7 +60,7 @@ lstmLayer = layers.Bidirectional(
 lstmLayer = layers.Dense(output + 1, activation="softmax")(lstmLayer)
 lstmModel = keras.Model(inputs, lstmLayer)
 # lstmModel.load_weights("lstm_2hand_model.keras")
-#----
+# ----
 
 # lstmModel = chooseLoadingModel("lstm_2hand_noCTC_60Features.keras") #註解以使用純lstm
 lstmModel = chooseLoadingModel("lstm_2hand_noCTC_60Features.keras")
@@ -106,7 +106,7 @@ resultsList = [
     "Stop",
     "wait",
 ]
-currentFeature = []  # 目前畫面的資料
+# currentFeature = []  # 目前畫面的資料
 continuousFeature = []  # 目前抓到的前面
 missCounter = 0
 maxMissCounter = 10
@@ -142,7 +142,6 @@ def blockIllegalResult(probabilities, lastResult, currentResult):
             currentResult // 2
         ):  # block reverse move
             return lastResult
-
 
         return currentResult
     else:
@@ -212,18 +211,20 @@ def getIFinger(i):  # just for testing
     return lr + finger + xy
 
 
-def isHandMoving(results):
+def isHandMoving(results, currentFeature):
     global continuousFeature
+    if not hasattr(isHandMoving, "lastHandJoint"):
+        isHandMoving.lastHandJoint = []
+    if not hasattr(isHandMoving, "lastHandJoint2"):
+        isHandMoving.lastHandJoint2 = []
     if not hasattr(isHandMoving, "lastFingertips"):
         isHandMoving.lastFingertips = []
-    if not hasattr(isHandMoving, "lastFingertips2"):
-        isHandMoving.lastFingertips2 = []
-
     threshold = [0.02, 0.08]
     fingertipsNodes = [8, 12, 16]  # 4,20
 
     leftFingertips = []
     rightFingertips = []
+
     if results.multi_hand_landmarks:
         for handLandmarks, handed in zip(
             results.multi_hand_landmarks, results.multi_handedness
@@ -233,33 +234,43 @@ def isHandMoving(results):
                     handLandmarks.landmark[0].x,
                     handLandmarks.landmark[0].y,
                 ]
+
                 for i in fingertipsNodes:
                     leftFingertips.append(handLandmarks.landmark[i].x)
                     leftFingertips.append(handLandmarks.landmark[i].y)
             elif handed.classification[0].label == "Right":
+
                 for i in fingertipsNodes:
                     rightFingertips.append(handLandmarks.landmark[i].x)
                     rightFingertips.append(handLandmarks.landmark[i].y)
-    currentFingertips = leftFingertips + rightFingertips
-    for i in range(len(currentFingertips)):
-        currentFingertips[i] = currentFingertips[i] - leftWrist[i % 2]
-    currentFingertips = organizer.normalizedOneDimensionList(currentFingertips)
+        currentFingertips = leftFingertips + rightFingertips
 
-    if len(isHandMoving.lastFingertips) > 0:
         for i in range(len(currentFingertips)):
-            fingertipsSAD = abs(currentFingertips[i] - isHandMoving.lastFingertips[i])
-            if fingertipsSAD > threshold[i % 2]:
-                # print(f"fingertipsSAD:{fingertipsSAD},from:{getIFinger(i)}")
-                isHandMoving.lastFingertips = currentFingertips
-                return True
+            currentFingertips[i] = currentFingertips[i] - leftWrist[i % 2]
+        currentFingertips = organizer.normalizedOneDimensionList(currentFingertips)
 
+        if isHandMoving.lastFingertips:
+            for i in range(len(currentFingertips)):
+                fingertipsSAD = abs(
+                    currentFingertips[i] - isHandMoving.lastFingertips[i]
+                )
+                if fingertipsSAD > threshold[i % 2]:  # if moved
+                    # print(f"fingertipsSAD:{fingertipsSAD},from:{getIFinger(i)}")
+                    isHandMoving.lastFingertips = []
+                    isHandMoving.lastHandJoint2 = isHandMoving.lastHandJoint.copy()
+                    isHandMoving.lastHandJoint = currentFeature.copy()
+                    return True
 
+        isHandMoving.lastFingertips = (
+            currentFingertips.copy()
+        )  # 把目前的fingertips 保留
+        if not isHandMoving.lastHandJoint2:
+            isHandMoving.lastHandJoint2 = currentFeature.copy()
+        else:
+            isHandMoving.lastHandJoint2 = isHandMoving.lastHandJoint.copy()
 
-    if len(isHandMoving.lasFingertips2) ==0:
-        isHandMoving.lastFingertips2 = currentFeature
-    else:
-        isHandMoving.lastFingertips2 = isHandMoving.lastFingertips
-    isHandMoving.lastFingertips = currentFingertips
+        isHandMoving.lastHandJoint = currentFeature.copy()
+
     return False
 
 
@@ -268,7 +279,7 @@ def combineAndPredict(currentFeature):
     global predictCount
     global predictFrequence
 
-    if len(continuousFeature) < 21:
+    if len(continuousFeature) < timeSteps:
         continuousFeature.append(currentFeature)
         # if len(continuousFeature) < 21:
         #     continuousFeature.append(currentFeature)
@@ -277,6 +288,7 @@ def combineAndPredict(currentFeature):
         # del continuousFeature[0]
         # continuousFeature.append(currentFeature)
         continuousFeature.append(currentFeature)
+
         continuousFeature_np = np.array(continuousFeature, dtype="float")
         predictCount = predictCount + 1
         if showResult != "stop":
@@ -374,13 +386,15 @@ def imageHandPosePredict(RGBImage):
     if isBothExist(results):  # 如果有雙手
         imageHandPosePredict.missCounter = 0
         currentFeature = recorder.record2HandPerFrame(results)
-
+        print(currentFeature)
         if imageHandPosePredict.handMovingPassCount == 0:
-            if isHandMoving(results):   # 如果計數器為0且手動了，開始記錄
+            if isHandMoving(results, currentFeature):  # 如果計數器為0且手動了，開始記錄
                 imageHandPosePredict.handMovingPassCount = timeSteps
                 if len(continuousFeature) == 0:
-                    continuousFeature.append(isHandMoving.lastFingertips)   # 檢查是否重複append lastFingertips，此處有空可以重構
-                    continuousFeature.append(isHandMoving.lastFingertips2)
+                    continuousFeature.append(
+                        isHandMoving.lastHandJoint
+                    )  # 檢查是否重複append lastFingertips，此處有空可以重構
+                    continuousFeature.append(isHandMoving.lastHandJoint2)
             else:
                 continuousFeature = []
                 pass
@@ -404,8 +418,8 @@ def imageHandPosePredict(RGBImage):
             continuousFeature = []
             showResult = "wait"
             predictCount = 0
-            isHandMoving.lastFingertips = []
-            isHandMoving.lastFingertips2 = []
+            isHandMoving.lastHandJoint = []
+            isHandMoving.lastHandJoint2 = []
             imageHandPosePredict.handMovingPassCount = 0
         else:
             imageHandPosePredict.missCounter += 1
