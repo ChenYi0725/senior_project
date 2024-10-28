@@ -113,6 +113,31 @@ def isHandMoving(results, currentFeature):
 
     return False
 
+def interpolate_number(returnList): 
+    for i in range(len(returnList)):
+        if returnList[i] == None:
+            counter = 1
+            while (returnList[i+counter]) == None:
+                counter = counter + 1
+            rightValue = returnList[i+counter]
+            leftValue = returnList[i-1]
+            length = counter +1
+            while counter > 0:
+                returnList[i+counter-1] = ((rightValue-leftValue)*counter/length)+leftValue
+                counter = counter -1 
+    return returnList
+
+def linear_interpolation(targetList):  
+    global timeSteps
+    return_list = [None] * timeSteps
+    length = len(targetList)
+    return_list[0] = targetList[0]  # head and end
+    return_list[20] = targetList[-1]
+    for i in range(1, len(targetList) - 1):  # spread the rest of them
+        insert_index = ((i * 19) // (length-1) )+ 1
+        return_list[insert_index] = targetList[i]
+    return_list = interpolate_number(return_list)
+    return return_list
 
 def predict(continuousFeature):
     continuousFeature = np.array(continuousFeature)
