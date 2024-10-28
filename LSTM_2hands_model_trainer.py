@@ -11,6 +11,7 @@ np.set_printoptions(threshold=np.inf)
 timeSteps = 21
 features = 60
 output = 13
+
 dataLengthList = []
 organizer = do.DataOrganizer()
 labelsMappingList = [
@@ -28,6 +29,7 @@ labelsMappingList = [
     "U'(Top Right)",
     "Stop",
 ]
+
 evaluator = me.ModelEvaluator(labelsMappingList)
 
 

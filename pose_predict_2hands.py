@@ -9,6 +9,7 @@ import time
 import tensorflow as tf
 from keras import regularizers
 from keras import layers
+import where_the_magic_happened
 
 # from LSTM_2hands_model_trainer import ctcLossFunction
 
@@ -34,10 +35,7 @@ def chooseLoadingModel(choose):
 
 recorder = rd.Recorder()
 organizer = do.DataOrganizer()
-# def warm_up():
-#     organizer.preprocessingData([[[0,0], [0,0]]])
-#     print("warm up")
-# warm_up()
+
 timeSteps = 21
 features = 60
 
@@ -61,7 +59,6 @@ lstmLayer = layers.Dense(output + 1, activation="softmax")(lstmLayer)
 lstmModel = keras.Model(inputs, lstmLayer)
 # lstmModel.load_weights("lstm_2hand_model.keras")
 # ----
-
 # lstmModel = chooseLoadingModel("lstm_2hand_noCTC_60Features.keras") #註解以使用純lstm
 lstmModel = chooseLoadingModel("lstm_2hand_noCTC_60Features.keras")
 showResult = "wait"
@@ -73,22 +70,6 @@ hands = mpHandsSolution.Hands(
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5,
 )
-# resultsList = [
-#     "B'(Back Clockwise)",
-#     "B (Back Counter Clockwise)",
-#     "D'(Bottom Left)",
-#     "D (Bottom Right)",
-#     "F (Front Clockwise)",
-#     "F' (Front Counter Clockwise)",
-#     "L'(Left Down)",
-#     "L (Left Up)",
-#     "R (Right Down)",
-#     "R'(Right Up)",
-#     "U (Top Left)",
-#     "U'(Top Right)",
-#     "Stop",
-#     "wait",
-# ]
 lastResult = 13
 resultsList = [
     "B'",
@@ -106,16 +87,10 @@ resultsList = [
     "Stop",
     "wait",
 ]
-# currentFeature = []  # 目前畫面的資料
-continuousFeature = []  # 目前抓到的前面
+
+continuousFeature = []  # 目前抓到的全部
 missCounter = 0
 maxMissCounter = 10
-
-# def linearInterpolate(firstTimeStep,secondTimeStep):
-#     if (len(firstTimeStep) == len(secondTimeStep)):
-#         for i in len(firstTimeStep):
-
-#     return newTimeStep
 
 
 def predict(continuousFeature):
@@ -128,7 +103,6 @@ def predict(continuousFeature):
     predictedResult = np.argmax(prediction, axis=1)[0]
     probabilities = prediction[0][predictedResult]
     return predictedResult, probabilities
-
 
 def blockIllegalResult(probabilities, lastResult, currentResult):
     if probabilities > 0.7:
@@ -148,16 +122,17 @@ def blockIllegalResult(probabilities, lastResult, currentResult):
         return lastResult
 
 
-def drawResultOnImage(image, resultCode, probabilities):
+def drawResultOnImage(image, resultString, probabilities):
     global showResult
     global resultsList
     global continuousFeature
-    result = resultsList[resultCode]
-    showResult = str(result)
+    # result = resultsList[resultCode]
+    # showResult = str(result)
+    resultString = resultString
     probabilities = str(probabilities)
     cv2.putText(
         image,
-        showResult,
+        resultString,
         (image.shape[1] - 620, 100),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
@@ -184,7 +159,7 @@ def drawResultOnImage(image, resultCode, probabilities):
     )
     cv2.putText(
         image,
-        f"missCounter{imageHandPosePredict.missCounter}",
+        f"missCounter{where_the_magic_happened.imageHandPosePredict.missCounter}",
         (image.shape[1] - 620, 250),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
@@ -209,6 +184,32 @@ def getIFinger(i):  # just for testing
         lr = "left "
     finger = fingerName[int((i % 6) / 2)]
     return lr + finger + xy
+
+def interpolate_number(returnList): 
+    for i in range(len(returnList)):
+        if returnList[i] == None:
+            counter = 1
+            while (returnList[i+counter]) == None:
+                counter = counter + 1
+            rightValue = returnList[i+counter]
+            leftValue = returnList[i-1]
+            length = counter +1
+            while counter > 0:
+                returnList[i+counter-1] = ((rightValue-leftValue)*counter/length)+leftValue
+                counter = counter -1 
+    return returnList
+
+def linear_interpolation(targetList):  
+    global timeSteps
+    return_list = [None] * timeSteps
+    length = len(targetList)
+    return_list[0] = targetList[0]  # head and end
+    return_list[20] = targetList[-1]
+    for i in range(1, len(targetList) - 1):  # spread the rest of them
+        insert_index = ((i * 19) // (length-1) )+ 1
+        return_list[insert_index] = targetList[i]
+    return_list = interpolate_number(return_list)
+    return return_list
 
 
 def isHandMoving(results, currentFeature):
@@ -423,8 +424,8 @@ def imageHandPosePredict(RGBImage):
             imageHandPosePredict.handMovingPassCount = 0
         else:
             imageHandPosePredict.missCounter += 1
-
-    return predictedResult, probabilities, results
+    resultString = resultsList[predictedResult]
+    return resultString, probabilities, results
 
 
 # =======================================================
@@ -441,12 +442,13 @@ while True:
     if not isCatchered:
         print("Cannot receive frame")
         break
-
-    predictedResult, probabilities, results = imageHandPosePredict(RGBImage)
+    
+    resultString,probabilities,results = where_the_magic_happened.imageHandPosePredict(RGBImage)
+    # resultString, probabilities, results = imageHandPosePredict(RGBImage)
 
     BGRImage = drawResultOnImage(
         image=BGRImage,
-        resultCode=predictedResult,
+        resultString=resultString,
         probabilities=probabilities,
     )
 

@@ -225,7 +225,7 @@ def imageHandPosePredict(RGBImage):
                 probabilities, lastResult, predictedResult
             )
             if predictedResult not in [12, 13]:
-                predictedResult = resultsList[predictedResult]
+                resultString = resultsList[predictedResult]
             #     print(resultsList[predictedResult])
             # # if not predictedResult == 13:
             # #     print(resultsList[predictedResult])
