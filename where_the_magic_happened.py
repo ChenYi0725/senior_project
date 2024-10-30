@@ -4,6 +4,7 @@ import mediapipe as mp
 import keras
 import tools.recorder as rd
 import numpy as np
+import time
 
 recorder = rd.Recorder()
 organizer = do.DataOrganizer()
@@ -112,19 +113,23 @@ def isHandMoving(results, currentFeature):
         isHandMoving.lastHandJoint = currentFeature.copy()
 
     return False
-
+# ------------------
 def interpolate_number(returnList): 
     for i in range(len(returnList)):
         if returnList[i] == None:
             counter = 1
             while (returnList[i+counter]) == None:
                 counter = counter + 1
-            rightValue = returnList[i+counter]
-            leftValue = returnList[i-1]
-            length = counter +1
-            while counter > 0:
-                returnList[i+counter-1] = ((rightValue-leftValue)*counter/length)+leftValue
-                counter = counter -1 
+            lastTimeStep = returnList[i+counter]
+            nextTimeStep = returnList[i-1]
+            length = counter + 1
+            while counter > 0: # 以time step 為單位
+                newTimeStep = []
+                for leftValue,rightValue in zip(nextTimeStep,lastTimeStep):
+                    interpolated_value = ((rightValue-leftValue)*counter/length)+leftValue
+                    newTimeStep.append(interpolated_value)
+                returnList[i + counter - 1] = newTimeStep.copy()
+                counter -= 1
     return returnList
 
 def linear_interpolation(targetList):  
@@ -138,6 +143,7 @@ def linear_interpolation(targetList):
         return_list[insert_index] = targetList[i]
     return_list = interpolate_number(return_list)
     return return_list
+#-----------------------
 
 def predict(continuousFeature):
     continuousFeature = np.array(continuousFeature)
@@ -218,24 +224,36 @@ def imageHandPosePredict(RGBImage):
         imageHandPosePredict.missCounter = 0  # 用於計算沒有雙手的次數
     if not hasattr(imageHandPosePredict, "handMovingPassCount"):
         imageHandPosePredict.handMovingPassCount = 0  # 用於計算免檢查通行次數
-
+    if not hasattr(imageHandPosePredict, "startTime"):
+        imageHandPosePredict.startTime = 0  # 用於計算免檢查通行次數
+    
     results = hands.process(RGBImage)  # 偵測手掌
-
     predictedResult = 13
     probabilities = 0
 
     if isBothExist(results):  # 如果有雙手
         imageHandPosePredict.missCounter = 0
         currentFeature = recorder.record2HandPerFrame(results)
-
+        currentTime = time.time()
         if imageHandPosePredict.handMovingPassCount == 0:
             if isHandMoving(results, currentFeature):
                 imageHandPosePredict.handMovingPassCount = timeSteps
+                
+                #----------------
+                # imageHandPosePredict.startTime = time.time()
+                
+                
+                # if (currentTime - isHandMoving.starTime)>3 and len(continuousFeature)>3:
+                #     continuousFeature = linear_interpolation(continuousFeature)
+                #     pass
+
+                #----------------
                 if len(continuousFeature) == 0:
                     continuousFeature.append(
                         isHandMoving.lastHandJoint
                     )  # 此處有空可以重構
                     continuousFeature.append(isHandMoving.lastHandJoint2)
+
             else:
                 continuousFeature = []
                 pass

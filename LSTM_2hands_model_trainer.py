@@ -15,21 +15,21 @@ output = 13
 dataLengthList = []
 organizer = do.DataOrganizer()
 labelsMappingList = [
-    "B'(Back Clockwise)",
-    "B (Back Counter Clockwise)",
-    "D'(Bottom Left)",
-    "D (Bottom Right)",
-    "F (Front Clockwise)",
-    "F' (Front Counter Clockwise)",
-    "L'(Left Down)",
-    "L (Left Up)",
-    "R (Right Down)",
-    "R'(Right Up)",
-    "U (Top Left)",
-    "U'(Top Right)",
+    "B'",
+    "B ",
+    "D'",
+    "D ",
+    "F ",
+    "F'",
+    "L'",
+    "L ",
+    "R ",
+    "R'",
+    "U'",
+    "U ",
     "Stop",
+    "wait",
 ]
-
 evaluator = me.ModelEvaluator(labelsMappingList)
 
 
