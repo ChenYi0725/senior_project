@@ -1,4 +1,3 @@
-
 import tools.data_organizer as do
 import mediapipe as mp
 import keras
@@ -20,8 +19,8 @@ mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 
 lstmModel = keras.models.load_model(
-            "the_precious_working_model/lstm_2hand_noCTC_60Features.keras",
-        )
+    "the_precious_working_model/lstm_2hand_noCTC_60Features.keras",
+)
 showResult = "wait"
 predictFrequence = 1
 predictCount = 0
@@ -52,6 +51,7 @@ resultsList = [
 continuousFeature = []  # 目前抓到的前面
 missCounter = 0
 maxMissCounter = 10
+
 
 def isHandMoving(results, currentFeature):
     global continuousFeature
@@ -104,7 +104,7 @@ def isHandMoving(results, currentFeature):
                     return True
 
         isHandMoving.lastFingertips = currentFingertips.copy()
-      # 把目前的fingertips 保留
+        # 把目前的fingertips 保留
         if not isHandMoving.lastHandJoint2:
             isHandMoving.lastHandJoint2 = currentFeature.copy()
         else:
@@ -113,37 +113,45 @@ def isHandMoving(results, currentFeature):
         isHandMoving.lastHandJoint = currentFeature.copy()
 
     return False
+
+
 # ------------------
-def interpolate_number(returnList): 
+def interpolate_number(returnList):
     for i in range(len(returnList)):
         if returnList[i] == None:
             counter = 1
-            while (returnList[i+counter]) == None:
+            while (returnList[i + counter]) == None:
                 counter = counter + 1
-            lastTimeStep = returnList[i+counter]
-            nextTimeStep = returnList[i-1]
+            lastTimeStep = returnList[i + counter]
+            nextTimeStep = returnList[i - 1]
             length = counter + 1
-            while counter > 0: # 以time step 為單位
+            while counter > 0:  # 以time step 為單位
                 newTimeStep = []
-                for leftValue,rightValue in zip(nextTimeStep,lastTimeStep):
-                    interpolated_value = ((rightValue-leftValue)*counter/length)+leftValue
+                for leftValue, rightValue in zip(nextTimeStep, lastTimeStep):
+                    interpolated_value = (
+                        (rightValue - leftValue) * counter / length
+                    ) + leftValue
                     newTimeStep.append(interpolated_value)
                 returnList[i + counter - 1] = newTimeStep.copy()
                 counter -= 1
     return returnList
 
-def linear_interpolation(targetList):  
+
+def linear_interpolation(targetList):
     global timeSteps
-    return_list = [None] * timeSteps
+    return_list = [None] * (timeSteps - 1)
     length = len(targetList)
     return_list[0] = targetList[0]  # head and end
-    return_list[20] = targetList[-1]
+    return_list[timeSteps - 2] = targetList[-1]
     for i in range(1, len(targetList) - 1):  # spread the rest of them
-        insert_index = ((i * 19) // (length-1) )+ 1
+        insert_index = ((i * (timeSteps - 2)) // (length - 1)) + 1
         return_list[insert_index] = targetList[i]
     return_list = interpolate_number(return_list)
     return return_list
-#-----------------------
+
+
+# -----------------------
+
 
 def predict(continuousFeature):
     continuousFeature = np.array(continuousFeature)
@@ -174,6 +182,7 @@ def blockIllegalResult(probabilities, lastResult, currentResult):
     else:
         return lastResult
 
+
 def isBothExist(results):
     isLeft = False
     isRight = False
@@ -190,6 +199,7 @@ def isBothExist(results):
         return True
     else:
         return False
+
 
 def combineAndPredict(currentFeature):
     global continuousFeature
@@ -212,7 +222,8 @@ def combineAndPredict(currentFeature):
 
     return 13, 0
 
-def imageHandPosePredict(RGBImage):
+
+def imageHandPosePredict(RGBImage):  # 重構判斷式
     global continuousFeature
     global showResult
     global predictCount
@@ -226,7 +237,7 @@ def imageHandPosePredict(RGBImage):
         imageHandPosePredict.handMovingPassCount = 0  # 用於計算免檢查通行次數
     if not hasattr(imageHandPosePredict, "startTime"):
         imageHandPosePredict.startTime = 0  # 用於計算免檢查通行次數
-    
+
     results = hands.process(RGBImage)  # 偵測手掌
     predictedResult = 13
     probabilities = 0
@@ -237,23 +248,13 @@ def imageHandPosePredict(RGBImage):
         currentTime = time.time()
         if imageHandPosePredict.handMovingPassCount == 0:
             if isHandMoving(results, currentFeature):
+                imageHandPosePredict.startTime = time.time()
                 imageHandPosePredict.handMovingPassCount = timeSteps
-                
-                #----------------
-                # imageHandPosePredict.startTime = time.time()
-                
-                
-                # if (currentTime - isHandMoving.starTime)>3 and len(continuousFeature)>3:
-                #     continuousFeature = linear_interpolation(continuousFeature)
-                #     pass
-
-                #----------------
                 if len(continuousFeature) == 0:
                     continuousFeature.append(
                         isHandMoving.lastHandJoint
                     )  # 此處有空可以重構
                     continuousFeature.append(isHandMoving.lastHandJoint2)
-
             else:
                 continuousFeature = []
                 pass
@@ -263,6 +264,12 @@ def imageHandPosePredict(RGBImage):
         if (
             len(currentFeature) == 84 and imageHandPosePredict.handMovingPassCount > 0
         ):  # 確認為特徵的數量
+            if (currentTime - imageHandPosePredict.startTime) > 3 and len(
+                continuousFeature
+            ) > 3:
+                continuousFeature = linear_interpolation(
+                    continuousFeature
+                )  # interpolate to 20 time steps
             predictedResult, probabilities = combineAndPredict(currentFeature)
             predictedResult = blockIllegalResult(
                 probabilities, lastResult, predictedResult
@@ -284,5 +291,4 @@ def imageHandPosePredict(RGBImage):
         else:
             imageHandPosePredict.missCounter += 1
     resultString = resultsList[predictedResult]
-    return resultString,probabilities,results
-
+    return resultString, probabilities, results
