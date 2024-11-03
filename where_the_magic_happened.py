@@ -264,7 +264,7 @@ def imageHandPosePredict(RGBImage):  # 重構判斷式
         if (
             len(currentFeature) == 84 and imageHandPosePredict.handMovingPassCount > 0
         ):  # 確認為特徵的數量
-            if (currentTime - imageHandPosePredict.startTime) > 3 and len(
+            if (currentTime - imageHandPosePredict.startTime) > 2 and len(
                 continuousFeature
             ) > 3:
                 continuousFeature = linear_interpolation(
