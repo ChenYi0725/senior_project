@@ -38,15 +38,31 @@ class DataOrganizer:
         inputList = np.delete(inputList, palm, axis=2)  # 刪除對應的索引(in features)
         return inputList
 
+    def keepIndexFingerAndTips(self,inputList):
+        fingerAndTips = np.array([
+            0, 1, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+            24, 25, 32, 33, 40, 41, 42, 43, 50, 51, 52,
+            53, 54, 55, 56, 57, 58, 59, 66, 67, 74, 75,
+            82, 83
+        ])
+        filtered_array = np.take(inputList, fingerAndTips, axis=2)
+        return filtered_array
+
     # @staticmethod
     # @jit(nopython=True)
     def preprocessingData(self, inputList):
-
         inputList = np.array(inputList)
         inputList = self.normalizedWithEachTimeSteps(inputList)
         # inputList = self.getRelativeWithFirstTimeStep(inputList)
         inputList = self.getRelativeLocation(inputList)
         inputList = self.removePalmNode(inputList)
+        return inputList
+
+    def preprocessingForShirnkModel(self, inputList):
+        inputList = np.array(inputList)
+        inputList = self.normalizedWithEachTimeSteps(inputList)
+        inputList = self.getRelativeLocation(inputList)
+        inputList = self.keepIndexFingerAndTips(inputList)
         return inputList
 
     @staticmethod
@@ -78,8 +94,10 @@ class DataOrganizer:
 
     def normalizedOneDimensionList(self, inputList):
         npInputList = np.array(inputList)
-        normalizedList = (npInputList - npInputList.min()) / (npInputList.max() - npInputList.min())
-        normalizedList= normalizedList.tolist()
+        normalizedList = (npInputList - npInputList.min()) / (
+            npInputList.max() - npInputList.min()
+        )
+        normalizedList = normalizedList.tolist()
         return normalizedList
 
     def getRelativeWithFirstTimeStep(self, npArray):
