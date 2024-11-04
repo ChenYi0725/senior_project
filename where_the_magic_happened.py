@@ -57,7 +57,17 @@ lastResult = waitCode
 continuousFeature = []  # 目前抓到的前面
 missCounter = 0
 maxMissCounter = 10
+# def chooseMode(mode):
+#     if mode == "normal":
+#         stopCode = 12
+#         waitCode = 13
+#     elif (mode =="shrink"):
+#         stopCode = 8
+#         waitCode =9
+#     elif ():
+    
 
+# chooseMode()
 
 def isHandMoving(results, currentFeature):
     global continuousFeature

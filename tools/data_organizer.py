@@ -55,6 +55,7 @@ class DataOrganizer:
         inputList = self.normalizedWithEachTimeSteps(inputList)
         # inputList = self.getRelativeWithFirstTimeStep(inputList)
         inputList = self.getRelativeLocation(inputList)
+        # inputList = self.getAccelerate(inputList)
         inputList = self.removePalmNode(inputList)
         return inputList
 
@@ -62,6 +63,7 @@ class DataOrganizer:
         inputList = np.array(inputList)
         inputList = self.normalizedWithEachTimeSteps(inputList)
         inputList = self.getRelativeLocation(inputList)
+        inputList = self.getAccelerate(inputList)
         inputList = self.keepIndexFingerAndTips(inputList)
         return inputList
 
