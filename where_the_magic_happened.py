@@ -67,15 +67,13 @@ def isHandMoving(results, currentFeature):      # 檢查finger tips是否被prep
     global continuousFeature
     if not hasattr(isHandMoving, "lastHandJoints"):  
         isHandMoving.lastHandJoints = []
-    if not hasattr(isHandMoving, "lastFingertips"):
-        isHandMoving.lastFingertips = []
-    if not hasattr(isHandMoving, "previousFingertips"):# 尚未使用，用以擴大手指節點移動檢查範圍，以擴大門檻
+    if not hasattr(isHandMoving, "previousFingertips"):
         isHandMoving.previousFingertips = []
-    threshold = [0.02, 0.08]
+
+    threshold = [0.09, 0.12]
     fingertipsNodes = [8, 12, 16]  # 4,20
-    maxReserveData = 5  # 搭配lastHandJoints
-    maxReserveFingertips = 5
-    holdData = 5
+    maxReserveData = 15 
+    additionalReserve = 5
 
     leftFingertips = []
     rightFingertips = []
@@ -103,28 +101,24 @@ def isHandMoving(results, currentFeature):      # 檢查finger tips是否被prep
         for i in range(len(currentFingertips)):
             currentFingertips[i] = currentFingertips[i] - leftWrist[i % 2]
         currentFingertips = organizer.normalizedOneDimensionList(currentFingertips)
-        # -----------
+        #--
         isHandMoving.previousFingertips.append(currentFingertips)   # 先插入fingertips
-        if isHandMoving.previousFingertips > maxReserveFingertips:
+        if len(isHandMoving.previousFingertips) > maxReserveData:
             del isHandMoving.previousFingertips[0]
 
-
-        # ------------
-        if isHandMoving.lastFingertips:
-            for i in range(len(currentFingertips)):
-                fingertipsSAD = abs(
-                    currentFingertips[i] - isHandMoving.lastFingertips[i]
-                )
-                if fingertipsSAD > threshold[i % 2]:  # if moved
-                    # print(f"fingertipsSAD:{fingertipsSAD},from:{getIFinger(i)}")
-                    isHandMoving.lastFingertips = []
-                    isHandMoving.lastHandJoints.append(currentFeature)
-                    if len(isHandMoving.lastHandJoints) > maxReserveData:
-                        del isHandMoving.lastHandJoints[0]
-                    return True
+        isHandMoving.previousFingertips.append(currentFingertips)
+        # ------------ 這裡重構
+        if len(isHandMoving.previousFingertips) > 2:
+            currentFingertips = isHandMoving.previousFingertips[-1]
+            for i in range(len(isHandMoving.previousFingertips) - 1):  # 不包含最後一個 list
+                for j in range(len(currentFingertips)):
+                    diff = abs(currentFingertips[j] - isHandMoving.previousFingertips[i][j])
+                    if diff > threshold[j % 2]:
+                        print(diff)
+                        if i > additionalReserve:
+                            isHandMoving.lastHandJoints = isHandMoving.lastHandJoints[i - additionalReserve:]
+                        return True
         # ----------------
-
-        isHandMoving.lastFingertips = currentFingertips.copy()
         # 保留時間步
         isHandMoving.lastHandJoints.append(currentFeature)
         if len(isHandMoving.lastHandJoints) > maxReserveData:
@@ -242,6 +236,8 @@ def combineAndPredict(currentFeature):
                 predictCount = 0
                 predictedResult, probabilities = predict(continuousFeature_np)
                 continuousFeature = []
+                isHandMoving.lastHandJoints = []
+                isHandMoving.previousFingertips = []
                 return predictedResult, probabilities
 
     return waitCode, 0
@@ -280,6 +276,7 @@ def imageHandPosePredict(RGBImage):  # 重構判斷式
 
             else:
                 continuousFeature = []
+
                 pass
 
         if (
@@ -295,7 +292,7 @@ def imageHandPosePredict(RGBImage):  # 重構判斷式
             predictedResult = blockIllegalResult(
                 probabilities, lastResult, predictedResult
             )
-            if predictedResult not in [stopCode, waitCode]:
+            if predictedResult not in [waitCode]:
                 resultString = resultsList[predictedResult]
                 print(resultString)
             imageHandPosePredict.handMovingPassCount = (
@@ -311,10 +308,15 @@ def imageHandPosePredict(RGBImage):  # 重構判斷式
             showResult = "wait"
             predictCount = 0
             isHandMoving.lastHandJoints = []
-            # isHandMoving.lastHandJoint = []
-            # isHandMoving.lastHandJoint2 = []
+            isHandMoving.previousFingertips = []
             imageHandPosePredict.handMovingPassCount = 0
         else:
             imageHandPosePredict.missCounter += 1
     resultString = resultsList[predictedResult]
     return resultString, probabilities, results
+
+def clearCurrentData():
+    global continuousFeature
+    continuousFeature = []
+    isHandMoving.previousFingertips = []
+    isHandMoving.lastHandJoints = []
