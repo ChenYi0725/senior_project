@@ -138,7 +138,7 @@ print("building model")
 model = keras.models.Sequential()
 model.add(
     keras.layers.LSTM(
-        units=256,
+        units=64,
         activation="tanh",
         input_shape=(timeSteps, features),
         kernel_regularizer=regularizers.l2(0.01),
@@ -174,5 +174,5 @@ print("save model")
 # 輸出模型
 # exportSavedModelAndTflite(model)
 model.save("lstm_2hand_shirnk_model.keras")
-model.save("lstm_2hand_shirnk_model.h5")
+# model.save("lstm_2hand_shirnk_model.h5")
 print("finish")
