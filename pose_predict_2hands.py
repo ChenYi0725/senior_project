@@ -26,7 +26,12 @@ mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 
 
 def drawResultOnImage(image, resultString, probabilities):
-    resultString = resultString
+    global tempResultKeeper
+    if resultString == "wait":
+        resultString = tempResultKeeper
+    else:
+        tempResultKeeper = resultString
+
     probabilities = str(probabilities)
     cv2.putText(
         image,
@@ -46,24 +51,24 @@ def drawResultOnImage(image, resultString, probabilities):
         (255, 0, 0),
         2,
     )
-    cv2.putText(
-        image,
-        f"timeSteps{len(where_the_magic_happened.continuousFeature)}",
-        (image.shape[1] - 620, 200),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        1,
-        (255, 0, 0),
-        2,
-    )
-    cv2.putText(
-        image,
-        f"missCounter{where_the_magic_happened.imageHandPosePredict.missCounter}",
-        (image.shape[1] - 620, 250),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        1,
-        (255, 0, 0),
-        2,
-    )
+    # cv2.putText(
+    #     image,
+    #     f"timeSteps{len(where_the_magic_happened.continuousFeature)}",
+    #     (image.shape[1] - 620, 200),
+    #     cv2.FONT_HERSHEY_SIMPLEX,
+    #     1,
+    #     (255, 0, 0),
+    #     2,
+    # )
+    # cv2.putText(
+    #     image,
+    #     f"missCounter{where_the_magic_happened.imageHandPosePredict.missCounter}",
+    #     (image.shape[1] - 620, 250),
+    #     cv2.FONT_HERSHEY_SIMPLEX,
+    #     1,
+    #     (255, 0, 0),
+    #     2,
+    # )
 
     return image
 
@@ -102,6 +107,8 @@ def drawNodeOnImage(results, image):  # 將節點和骨架繪製到影像中
     return image
 
 
+tempResultKeeper = "wait"
+
 # =======================================================
 
 while True:
@@ -120,8 +127,9 @@ while True:
     resultString, probabilities, results = (
         where_the_magic_happened.imageHandPosePredict(RGBImage)
     )
+    cv2.imshow("pose predict with no result", BGRImage)
     # resultString, probabilities, results = imageHandPosePredict(RGBImage)
-
+    # noResultImage = BGRImage
     BGRImage = drawResultOnImage(
         image=BGRImage,
         resultString=resultString,
@@ -131,12 +139,12 @@ while True:
     BGRImage = drawNodeOnImage(results=results, image=BGRImage)  # 可移除
     # BGRImage = LeftRightHandClassify(BGRImage, results)  # 可移除
 
-    cv2.imshow("hand tracker", BGRImage)
+    cv2.imshow("pose predict", BGRImage)
 
     if cv2.waitKey(1) == ord("q"):
         break  # 按下 q 鍵停止
 
-    if cv2.getWindowProperty("hand tracker", cv2.WND_PROP_VISIBLE) < 1:
+    if cv2.getWindowProperty("pose predict", cv2.WND_PROP_VISIBLE) < 1:
         break
 
 

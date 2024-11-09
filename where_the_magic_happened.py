@@ -72,8 +72,8 @@ def isHandMoving(results, currentFeature):      # 檢查finger tips是否被prep
 
     threshold = [0.09, 0.12]
     fingertipsNodes = [8, 12, 16]  # 4,20
-    maxReserveData = 15 
-    additionalReserve = 5
+    maxReserveData = 16
+    additionalReserve = 8
 
     leftFingertips = []
     rightFingertips = []
@@ -243,7 +243,7 @@ def combineAndPredict(currentFeature):
     return waitCode, 0
 
 
-def imageHandPosePredict(RGBImage):  # 重構判斷式
+def imageHandPosePredict(RGBImage):  
     global continuousFeature
     global showResult
     global predictCount

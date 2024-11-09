@@ -270,6 +270,6 @@ ctcModel.fit(  # 收到none 值，尚未找出原因->遞迴測labels, inputLeng
 print("save model")
 # 輸出模型
 # exportSavedModelAndTflite(model)
-ctcModel.save("lstm_2hand_model.keras")
-ctcModel.save("lstm_2hand_model.h5")
+ctcModel.save("lstm_ctc_model.keras")
+# ctcModel.save("lstm_ctc_model.h5")
 print("finish")
