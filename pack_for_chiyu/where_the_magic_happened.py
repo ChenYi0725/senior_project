@@ -13,7 +13,7 @@ recorder = rd.Recorder()
 organizer = do.DataOrganizer()
 timeSteps = 21
 # features = 60
-features =36
+features = 36
 
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
@@ -51,7 +51,7 @@ resultsList = [
 # stopCode = 12
 # waitCode = 13
 stopCode = 8
-waitCode =9
+waitCode = 9
 lastResult = waitCode
 # currentFeature = []  # 目前畫面的資料
 continuousFeature = []  # 目前抓到的前面
@@ -164,7 +164,7 @@ def predict(continuousFeature):
     predictData = np.expand_dims(continuousFeature, axis=0)  # (1, timeSteps, features)
     # 進行預測
     # predictData = organizer.preprocessingData(predictData)
-    predictData = organizer.preprocessingForShirnkModel(predictData)
+    predictData = organizer.preprocessForShirnkModel(predictData)
 
     prediction = lstmModel.predict(predictData, verbose=0)  # error
     predictedResult = np.argmax(prediction, axis=1)[0]
@@ -267,7 +267,6 @@ def imageHandPosePredict(RGBImage):  # 重構判斷式
                 continuousFeature = []
                 pass
 
-
         if (
             len(currentFeature) == 84 and imageHandPosePredict.handMovingPassCount > 0
         ):  # 確認為特徵的數量
@@ -284,7 +283,9 @@ def imageHandPosePredict(RGBImage):  # 重構判斷式
             if predictedResult not in [stopCode, waitCode]:
                 resultString = resultsList[predictedResult]
                 # print(resultString)
-            imageHandPosePredict.handMovingPassCount = imageHandPosePredict.handMovingPassCount - 1
+            imageHandPosePredict.handMovingPassCount = (
+                imageHandPosePredict.handMovingPassCount - 1
+            )
             #     print(resultsList[predictedResult])
             # # if not predictedResult == 13:
             # #     print(resultsList[predictedResult])

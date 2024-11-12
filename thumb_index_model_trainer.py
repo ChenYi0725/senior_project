@@ -9,7 +9,7 @@ import tools.model_evaluator as me
 np.set_printoptions(threshold=np.inf)
 
 timeSteps = 21
-features = 36
+features = 20
 output = 9
 
 dataLengthList = []
@@ -41,23 +41,10 @@ def ctcLossFunction(args):
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
     global dataLengthList
     inputList = np.array(inputList)
-    inputList = organizer.preprocessForShirnkModel(inputList)
+    inputList = organizer.preprocessForIndexaAndThumbModel(inputList)
     dataLengthList.append(len(inputList))
     return inputList
 
-
-def exportSavedModelAndTflite(model):
-    model.export(filepath="lstm_2hand_saved_model", format="tf_saved_model")
-    converter = tf.lite.TFLiteConverter.from_saved_model("lstm_2hand_saved_model")
-    converter.experimental_enable_resource_variables = True
-    converter.target_spec.supported_ops = [
-        tf.lite.OpsSet.TFLITE_BUILTINS,
-        tf.lite.OpsSet.SELECT_TF_OPS,
-    ]
-    converter._experimental_lower_tensor_list_ops = False
-    tflite_model = converter.convert()
-    with open("lstm_2hand.tflite", "wb") as f:
-        f.write(tflite_model)
 
 
 def evaluateModel(model, data, labels, inputLength, labelLength):
@@ -173,6 +160,6 @@ model.fit(
 print("save model")
 # 輸出模型
 # exportSavedModelAndTflite(model)
-model.save("lstm_2hand_shirnk_model.keras")
+model.save("lstm_index_thumb_model.keras")
 # model.save("lstm_2hand_shirnk_model.h5")
 print("finish")

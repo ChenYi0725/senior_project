@@ -48,7 +48,7 @@ test_data = organizer.getDataFromTxt("test_data_set/b_test")
 test_data = test_data[0]
 
 test_data = np.expand_dims(test_data, axis=0)
-input_test_data = organizer.preprocessingData(test_data)
+input_test_data = organizer.preprocessData(test_data)
 prediction = lstmModel.predict(input_test_data, verbose=0)
 
 predictedResult = np.argmax(prediction[0], axis=1)[0]
@@ -56,5 +56,3 @@ probabilities = prediction[0][predictedResult]
 print(prediction)
 print(predictedResult)
 # print(probabilities)
-
-

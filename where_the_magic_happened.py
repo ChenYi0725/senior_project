@@ -59,13 +59,12 @@ missCounter = 0
 maxMissCounter = 10
 
 
-
 # chooseMode()
 
 
-def isHandMoving(results, currentFeature):      # 檢查finger tips是否被preprocessing 影響
+def isHandMoving(results, currentFeature):  # 檢查finger tips是否被preprocessing 影響
     global continuousFeature
-    if not hasattr(isHandMoving, "lastHandJoints"):  
+    if not hasattr(isHandMoving, "lastHandJoints"):
         isHandMoving.lastHandJoints = []
     if not hasattr(isHandMoving, "previousFingertips"):
         isHandMoving.previousFingertips = []
@@ -101,8 +100,8 @@ def isHandMoving(results, currentFeature):      # 檢查finger tips是否被prep
         for i in range(len(currentFingertips)):
             currentFingertips[i] = currentFingertips[i] - leftWrist[i % 2]
         currentFingertips = organizer.normalizedOneDimensionList(currentFingertips)
-        #--
-        isHandMoving.previousFingertips.append(currentFingertips)   # 先插入fingertips
+        # --
+        isHandMoving.previousFingertips.append(currentFingertips)  # 先插入fingertips
         if len(isHandMoving.previousFingertips) > maxReserveData:
             del isHandMoving.previousFingertips[0]
 
@@ -110,20 +109,25 @@ def isHandMoving(results, currentFeature):      # 檢查finger tips是否被prep
         # ------------ 這裡重構
         if len(isHandMoving.previousFingertips) > 2:
             currentFingertips = isHandMoving.previousFingertips[-1]
-            for i in range(len(isHandMoving.previousFingertips) - 1):  # 不包含最後一個 list
+            for i in range(
+                len(isHandMoving.previousFingertips) - 1
+            ):  # 不包含最後一個 list
                 for j in range(len(currentFingertips)):
-                    diff = abs(currentFingertips[j] - isHandMoving.previousFingertips[i][j])
+                    diff = abs(
+                        currentFingertips[j] - isHandMoving.previousFingertips[i][j]
+                    )
                     if diff > threshold[j % 2]:
                         print(diff)
                         if i > additionalReserve:
-                            isHandMoving.lastHandJoints = isHandMoving.lastHandJoints[i - additionalReserve:]
+                            isHandMoving.lastHandJoints = isHandMoving.lastHandJoints[
+                                i - additionalReserve :
+                            ]
                         return True
         # ----------------
         # 保留時間步
         isHandMoving.lastHandJoints.append(currentFeature)
         if len(isHandMoving.lastHandJoints) > maxReserveData:
             del isHandMoving.lastHandJoints[0]
-
 
     return False
 
@@ -171,13 +175,13 @@ def predict(continuousFeature):
     predictData = np.expand_dims(continuousFeature, axis=0)  # (1, timeSteps, features)
     # 進行預測
     # predictData = organizer.preprocessingData(predictData)
-    predictData = organizer.preprocessingForShirnkModel(predictData)
+    predictData = organizer.preprocessForShirnkModel(predictData)
     try:
         prediction = lstmModel.predict(predictData, verbose=0)  # error
         predictedResult = np.argmax(prediction, axis=1)[0]
-        probabilities = prediction[0][predictedResult]  
+        probabilities = prediction[0][predictedResult]
     except:
-        predictedResult = len(resultsList) -1
+        predictedResult = len(resultsList) - 1
         probabilities = 0.0
 
     return predictedResult, probabilities
@@ -243,7 +247,7 @@ def combineAndPredict(currentFeature):
     return waitCode, 0
 
 
-def imageHandPosePredict(RGBImage):  
+def imageHandPosePredict(RGBImage):
     global continuousFeature
     global showResult
     global predictCount
@@ -314,6 +318,7 @@ def imageHandPosePredict(RGBImage):
             imageHandPosePredict.missCounter += 1
     resultString = resultsList[predictedResult]
     return resultString, probabilities, results
+
 
 def clearCurrentData():
     global continuousFeature

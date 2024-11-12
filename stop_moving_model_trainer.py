@@ -7,6 +7,7 @@ import numpy as np
 import tools.model_evaluator as me
 import random
 from tqdm import tqdm
+
 np.set_printoptions(threshold=np.inf)
 
 timeSteps = 21
@@ -29,7 +30,7 @@ def ctcLossFunction(args):
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
     global dataLengthList
     inputList = np.array(inputList)
-    inputList = organizer.preprocessingForShirnkModel(inputList)
+    inputList = organizer.preprocessForShirnkModel(inputList)
     dataLengthList.append(len(inputList))
     return inputList
 
@@ -64,7 +65,7 @@ data_paths = [
     ("rightUpData", "data_set_2hands/right_up_2hands"),
     ("topLeftData", "data_set_2hands/top_left_2hands"),
     ("topRightData", "data_set_2hands/top_right_2hands"),
-    ("stopData", "data_set_2hands/stop_2hands")
+    ("stopData", "data_set_2hands/stop_2hands"),
 ]
 data_dict = {}
 for name, path in tqdm(data_paths, desc="Loading Data"):
@@ -79,17 +80,17 @@ rightUpData = data_dict["rightUpData"]
 topLeftData = data_dict["topLeftData"]
 topRightData = data_dict["topRightData"]
 stopData = data_dict["stopData"]
-#===============
+# ===============
 moveData = np.concatenate(
     (
-        np.array(random.sample(frontClockwiseData,125)),
-        np.array(random.sample(frontCounterClockwiseData,125)),
-        np.array(random.sample(leftDownData,125)),
-        np.array(random.sample(leftUpData,125)),
-        np.array(random.sample(rightDownData,125)),
-        np.array(random.sample(rightUpData,125)),
-        np.array(random.sample(topLeftData,125)),
-        np.array(random.sample(topRightData,125)),
+        np.array(random.sample(frontClockwiseData, 125)),
+        np.array(random.sample(frontCounterClockwiseData, 125)),
+        np.array(random.sample(leftDownData, 125)),
+        np.array(random.sample(leftUpData, 125)),
+        np.array(random.sample(rightDownData, 125)),
+        np.array(random.sample(rightUpData, 125)),
+        np.array(random.sample(topLeftData, 125)),
+        np.array(random.sample(topRightData, 125)),
     ),
     axis=0,
 )

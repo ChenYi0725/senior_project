@@ -4,7 +4,7 @@ import tools.camera as camera
 import tools.recorder as rd
 import time
 import os
-
+# 錄製的資料為先左手再右手
 
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式

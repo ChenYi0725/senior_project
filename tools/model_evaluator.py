@@ -17,7 +17,6 @@ class ModelEvaluator(Callback):
         self.dataLengthList = []
         self.xTest, self.yTest = self.createTestData()
 
-
     def on_epoch_end(self, epoch, logs={}):
         self.losses.append(logs.get("loss"))
 
@@ -63,7 +62,7 @@ class ModelEvaluator(Callback):
     ):  # inputList.shape = (data numbers, time step, features)
         inputList = np.array(inputList)
         self.dataLengthList.append(len(inputList))
-        inputList = self.organizer.preprocessingData(inputList)
+        inputList = self.organizer.preprocessData(inputList)
         return inputList
 
     def createTestData(self):

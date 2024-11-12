@@ -4,72 +4,67 @@ import numpy as np
 
 
 class DataOrganizer:
-    def cutFirstTimeStep(self, npArray):
+    def _cutFirstTimeStep(self, npArray):
         npArray = npArray[:, 1:, :]
         return npArray
 
-    def removePalmNode(self, inputList):
-        palm = [
-            0,
-            1,
-            2,
-            3,
-            10,
-            11,
-            18,
-            19,
-            26,
-            27,
-            34,
-            35,
-            42,
-            43,
-            44,
-            45,
-            52,
-            53,
-            60,
-            61,
-            68,
-            69,
-            76,
-            77,
-        ]
+    def _MediapipeNodeToIndex(self, inputList):
+        index = []
+        for i in inputList:
+            index.append(i * 2)
+            index.append(i * 2 + 1)
+        secondHand = []
+        for i in index:
+            secondHand.append(i + 42)
+        index.extend(secondHand)
+        return index
+
+    def _removePalmNode(self, inputList):
+        palm = self._MediapipeNodeToIndex([0, 1, 5, 9, 13, 17])
         inputList = np.delete(inputList, palm, axis=2)  # 刪除對應的索引(in features)
         return inputList
 
-    def keepIndexFingerAndTips(self,inputList):
-        fingerAndTips = np.array([
-            0, 1, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-            24, 25, 32, 33, 40, 41, 42, 43, 50, 51, 52,
-            53, 54, 55, 56, 57, 58, 59, 66, 67, 74, 75,
-            82, 83
-        ])
+    def _keepIndexFingerAndThumb(self, inputList):
+        targetIndex = np.array(
+            self._MediapipeNodeToIndex([0, 3, 4, 7, 8 ])
+        )
+        filtered_array = np.take(inputList, targetIndex, axis=2)
+        return filtered_array
+
+    def _keepIndexFingerAndTips(self, inputList):
+        fingerAndTips = np.array(
+            self._MediapipeNodeToIndex([0, 4, 5, 6, 7, 8, 12, 16, 20])
+        )
         filtered_array = np.take(inputList, fingerAndTips, axis=2)
         return filtered_array
 
     # @staticmethod
     # @jit(nopython=True)
-    def preprocessingData(self, inputList):
+    def preprocessData(self, inputList):
         inputList = np.array(inputList)
-        inputList = self.normalizedWithEachTimeSteps(inputList)
-        # inputList = self.getRelativeWithFirstTimeStep(inputList)
-        inputList = self.getRelativeLocation(inputList)
+        inputList = self._normalizedWithEachTimeSteps(inputList)
+        # inputList = self._getRelativeWithFirstTimeStep(inputList)
+        inputList = self._getRelativeLocation(inputList)
         # inputList = self.getAccelerate(inputList)
-        inputList = self.removePalmNode(inputList)
+        inputList = self._removePalmNode(inputList)
         return inputList
 
-    def preprocessingForShirnkModel(self, inputList):
+    def preprocessForShirnkModel(self, inputList):
         inputList = np.array(inputList)
-        inputList = self.normalizedWithEachTimeSteps(inputList)
-        inputList = self.getRelativeLocation(inputList)
-        inputList = self.getAccelerate(inputList)
-        inputList = self.keepIndexFingerAndTips(inputList)
+        inputList = self._normalizedWithEachTimeSteps(inputList)
+        inputList = self._getRelativeLocation(inputList)
+        inputList = self._keepIndexFingerAndTips(inputList)
+        return inputList
+    
+    def preprocessForIndexaAndThumbModel(self, inputList):
+        inputList = np.array(inputList)
+        inputList = self._normalizedWithEachTimeSteps(inputList)
+        inputList = self._getRelativeLocation(inputList)
+        inputList = self._keepIndexFingerAndThumb(inputList)
         return inputList
 
     @staticmethod
-    # @jit(nopython=True)
-    def getRelativeLocation(npArray):  # 輸入:(data number,time step, features)
+    def _getRelativeLocation(npArray):  # 以各個時間步的左手腕為基準，輸入:(data number,time step, features)
         for i in range(len(npArray)):
             for j in range(len(npArray[i])):
                 originX = npArray[i][j][0]
@@ -82,8 +77,7 @@ class DataOrganizer:
         return npArray
 
     @staticmethod
-    # @jit(nopython=True)
-    def normalizedWithEachTimeSteps(
+    def _normalizedWithEachTimeSteps(
         inputList,
     ):  # 輸入:(data number,time step, features)
 
@@ -102,7 +96,7 @@ class DataOrganizer:
         normalizedList = normalizedList.tolist()
         return normalizedList
 
-    def getRelativeWithFirstTimeStep(self, npArray):
+    def _getRelativeWithFirstTimeStep(self, npArray):    #以第一個時間步左手腕為基準
         for i in range(len(npArray)):
             originX = npArray[i][0][0]
             originY = npArray[i][0][1]
@@ -114,22 +108,22 @@ class DataOrganizer:
                         npArray[i][j][k] = npArray[i][j][k] - originY
         return npArray
 
-    def getDataFromTxt(self, fileName):
+    def getDataFromTxt(self, fileName):     #從檔案中取得list資料
         with open(f"{fileName}.txt", "r") as file:
             content = file.read()
         result = eval(content)
         return result
 
-    def getAccelerate(self, npArray):
+    def getAccelerate(self, npArray):   # 取得與上一時間步的差距
         for i in range(len(npArray)):
             for j in reversed(range(len(npArray[i]))):
                 for k in reversed(range(len(npArray[i][j]))):
                     if not j < 1:
                         npArray[i][j][k] = npArray[i][j][k] - npArray[i][j - 1][k]
-        npArray = self.cutFirstTimeStep(npArray)
+        npArray = self._cutFirstTimeStep(npArray)
         return npArray
 
-    def findErrorData(self, fileName):
+    def findErrorData(self, fileName):  #用於尋找錯誤資料
         targetFile = self.getDataFromTxt(fileName)
         errorList = []
         for i in range(len(targetFile)):
