@@ -163,7 +163,7 @@ print("Start Training")
 model.fit(
     data,
     labels,
-    epochs=650,
+    epochs=300,
     batch_size=21,
     verbose=1,
     # callbacks=[evaluator],

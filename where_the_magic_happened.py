@@ -59,7 +59,6 @@ missCounter = 0
 maxMissCounter = 10
 
 
-# chooseMode()
 
 
 def isHandMoving(results, currentFeature):  # 檢查finger tips是否被preprocessing 影響
@@ -70,7 +69,7 @@ def isHandMoving(results, currentFeature):  # 檢查finger tips是否被preproce
         isHandMoving.previousFingertips = []
 
     threshold = [0.09, 0.12]
-    fingertipsNodes = [8, 12, 16]  # 4,20
+    fingertipsNodes = [8, 4] 
     maxReserveData = 16
     additionalReserve = 8
 

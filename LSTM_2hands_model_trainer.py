@@ -156,20 +156,6 @@ lstmLayer = layers.Bidirectional(
 lstmLayer = layers.Dense(output + 1, activation="softmax")(lstmLayer)
 lstmModel = keras.Model(inputs, lstmLayer)
 
-
-# lstmModel = keras.models.Sequential()
-# lstmModel.add(
-#     layers.Bidirectional(
-#         layers.LSTM(
-#             units=256,
-#             activation="tanh",
-#             input_shape=(timeSteps, features),
-#             kernel_regularizer=regularizers.l2(0.01),
-#             return_sequences=True,  # for ctc
-#         )
-#     )
-# )
-# lstmModel.add(layers.Dense(output + 1, activation="softmax"))  # 13 + 1 for ctc blanky
 # ========================= add ctc loss
 yPred = lstmModel.output
 labelsForCTC = layers.Input(name="label", shape=[None], dtype="int32")
@@ -249,24 +235,17 @@ labelLength = np.expand_dims(
     np.array([1] * len(data), dtype=np.int32), -1
 )  # (13000, 1)
 
-# 驗證形狀
-# print("data shape:", data.shape)
-# print("labels shape:", labels.shape)  # 應該要是(13000, 14)
-# print("inputLength shape:", inputLength.shape)
-# print("labelLength shape:", labelLength.shape)
-
 
 # =================
-ctcModel.fit(  # 收到none 值，尚未找出原因->遞迴測labels, inputLength, labelLength
+ctcModel.fit( 
     [data, labels, inputLength, labelLength],
     labels,
     epochs=350,
     batch_size=21,
     verbose=1,
-    callbacks=[evaluator],
+    # callbacks=[evaluator],
 )
 
-# evaluateModel(ctcModel, data, labels, inputLength, labelLength)
 print("save model")
 # 輸出模型
 # exportSavedModelAndTflite(model)
