@@ -159,16 +159,16 @@ with mpHandsSolution.Hands(
             break
 
         results = hands.process(RGBImage)  # 偵測手掌
-        if isLRExist(results):
-            cv2.putText(
-                BGRImage,
-                "Exist",
-                (300, 300),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                (255, 255, 0),
-                2,
-            )
+        # if isLRExist(results):
+        #     cv2.putText(
+        #         BGRImage,
+        #         "Exist",
+        #         (300, 300),
+        #         cv2.FONT_HERSHEY_SIMPLEX,
+        #         1,
+        #         (255, 255, 0),
+        #         2,
+        #     )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
 
         if recorder.isRecording and isLRExist(results):
@@ -181,7 +181,7 @@ with mpHandsSolution.Hands(
         else:
             pass
 
-        BGRImage = LRMovement(BGRImage, results)
+        # BGRImage = LRMovement(BGRImage, results)
         BGRImage = drawRecordedTime(BGRImage)
         cv2.imshow("hand tracker", BGRImage)
         cv2.setMouseCallback("hand tracker", onMouse)  # 滑鼠事件

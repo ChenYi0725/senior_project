@@ -10,14 +10,14 @@ from tools import data_organizer as do
 
 class ModelEvaluator(Callback):
     def __init__(self, label):
+        print("loading test data for evaluator")
         super(ModelEvaluator, self).__init__()
         self.organizer = do.DataOrganizer()
         self.losses = []
         self.label = label
         self.dataLengthList = []
-        self.testData, self.testlabel = self.createTestData()
-        print(self.testData.shape)
-        print(self.testlabel.shape)
+        self.xTest, self.yTest = self.createTestData()
+
 
     def on_epoch_end(self, epoch, logs={}):
         self.losses.append(logs.get("loss"))

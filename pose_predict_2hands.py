@@ -5,17 +5,25 @@ import tools.data_organizer as do
 import tools.camera as camera
 import tools.recorder as rd
 import keras
+import time
+
 
 recorder = rd.Recorder()
-frameReceiver = camera.Camera()
 organizer = do.DataOrganizer()
+# def warm_up():
+#     organizer.preprocessingData([[[0,0], [0,0]]])
+#     print("warm up")
+# warm_up()
+timeSteps = 21
+features = 60
 
+frameReceiver = camera.Camera()
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 lstmModel = keras.models.load_model("lstm_2hand_model.keras")
 showResult = "wait"
-predictFrequence = 3
+predictFrequence = 1
 predictCount = 0
 hands = mpHandsSolution.Hands(
     model_complexity=0,
@@ -23,76 +31,65 @@ hands = mpHandsSolution.Hands(
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5,
 )
+# resultsList = [
+#     "B'(Back Clockwise)",
+#     "B (Back Counter Clockwise)",
+#     "D'(Bottom Left)",
+#     "D (Bottom Right)",
+#     "F (Front Clockwise)",
+#     "F' (Front Counter Clockwise)",
+#     "L'(Left Down)",
+#     "L (Left Up)",
+#     "R (Right Down)",
+#     "R'(Right Up)",
+#     "U (Top Left)",
+#     "U'(Top Right)",
+#     "Stop",
+#     "wait",
+# ]
+lastResult = 13
 resultsList = [
-    "B'(Back Clockwise)",
-    "B (Back Counter Clockwise)",
-    "D'(Bottom Left)",
-    "D (Bottom Right)",
-    "F (Front Clockwise)",
-    "F' (Front Counter Clockwise)",
-    "L'(Left Down)",
-    "L (Left Up)",
-    "R (Right Down)",
-    "R'(Right Up)",
-    "U (Top Left)",
-    "U'(Top Right)",
+    "B'",
+    "B ",
+    "D'",
+    "D ",
+    "F ",
+    "F'",
+    "L'",
+    "L ",
+    "R ",
+    "R'",
+    "U ",
+    "U'",
     "Stop",
     "wait",
 ]
-lastResult = 13
-# resultsList = [
-#     "B'",
-#     "B ",
-#     "D'",
-#     "D ",
-#     "F ",
-#     "F'",
-#     "L'",
-#     "L ",
-#     "R ",
-#     "R'",
-#     "U ",
-#     "U'",
-#     "Stop",
-# ]
-
 currentFeature = []  # 目前畫面的資料
 continuousFeature = []  # 目前抓到的前面
 missCounter = 0
-maxMissCounter = 5
+maxMissCounter = 10
 
+# def linearInterpolate(firstTimeStep,secondTimeStep):
+#     if (len(firstTimeStep) == len(secondTimeStep)):
+#         for i in len(firstTimeStep):
 
-def decodedResult(predictedResult):
-    decodedResult = resultsList[predictedResult]
-    return decodedResult
-
-
-def getResultIndex(result):
-    try:
-        resultCode = resultsList.index(result)
-        return resultCode
-    except:
-        print("not found, return 13")
-        return 13
+#     return newTimeStep
 
 
 def predict(continuousFeature):
     continuousFeature = np.array(continuousFeature)
-    continuousFeature = (continuousFeature - continuousFeature.min()) / (
-        continuousFeature.max() - continuousFeature.min()
-    )
-    # 檢查 continuousFeature 的形狀，是 (21, 84)
-    if continuousFeature.shape != (21, 84):
-        continuousFeature = []
-        # raise ValueError("continuousFeature 的形狀錯誤")
-
-    predictData = np.expand_dims(continuousFeature, axis=0)  # (1, 21, 84)
+    predictData = np.expand_dims(continuousFeature, axis=0)  # (1, timeSteps, features)
 
     # 進行預測
+    startTime = time.time()
     predictData = organizer.preprocessingData(predictData)
+    prerocessTime = time.time()
     prediction = lstmModel.predict(predictData, verbose=0)
-    predictedResult = np.argmax(prediction, axis=1)[0]  # 確保predictedResult是一個整數
+    predictedResult = np.argmax(prediction, axis=1)[0]
+    predictTime = time.time()
     probabilities = prediction[0][predictedResult]
+    print(f"prerocessTime:{prerocessTime - startTime}")
+    print(f"predictTime:{predictTime-prerocessTime}")
     return predictedResult, probabilities
 
 
@@ -107,19 +104,14 @@ def blockTheReverseMove(lastCode, currentCode):
 
 def drawResultOnImage(image, resultCode, probabilities):
     global showResult
-
-    # if probabilities > 0.7:
-    #     lastCode = getResultIndex(showResult)
-    #     resultCode = blockTheReverseMove(lastCode, resultCode)
-    #     result = decodedResult(resultCode)
-    #     showResult = str(result)
-    result = decodedResult(resultCode)
+    global resultsList
+    result = resultsList[resultCode]
     showResult = str(result)
     probabilities = str(probabilities)
     cv2.putText(
         image,
         probabilities,
-        (image.shape[1] - 400, 250),
+        (image.shape[1] - 600, 150),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
         (255, 0, 0),
@@ -128,10 +120,10 @@ def drawResultOnImage(image, resultCode, probabilities):
     cv2.putText(
         image,
         showResult,
-        (300, 130),
+        (image.shape[1] - 600, 100),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
-        (255, 255, 0),
+        (255, 0, 0),
         2,
     )
     return image
@@ -144,20 +136,21 @@ def combineAndPredict(currentFeature):
 
     if len(continuousFeature) < 21:
         continuousFeature.append(currentFeature)
+        # if len(continuousFeature) < 21:
+        #     continuousFeature.append(currentFeature)
     else:
         del continuousFeature[0]
+        # del continuousFeature[0]
+        # continuousFeature.append(currentFeature)
         continuousFeature.append(currentFeature)
+        continuousFeature_np = np.array(continuousFeature, dtype="float")
 
-        # 確保 continuousFeature 是一個形狀一致的 NumPy 陣列
-        continuousFeature_np = np.array(continuousFeature)
         predictCount = predictCount + 1
         if predictCount == predictFrequence:
             predictCount = 0
-            if continuousFeature_np.shape == (21, len(currentFeature)):
-                predictedResult, probabilities = predict(continuousFeature_np)
-                return predictedResult, probabilities
-            else:
-                print("continuousFeature 形狀錯誤，跳過預測")
+            predictedResult, probabilities = predict(continuousFeature_np)
+
+            return predictedResult, probabilities
 
     return 13, 0
 
@@ -234,21 +227,25 @@ def imageHandPosePredict(RGBImage):
     global lastResult
     if not hasattr(imageHandPosePredict, "missCounter"):
         imageHandPosePredict.missCounter = 0
-
+    handStartTime = time.time()
     results = hands.process(RGBImage)  # 偵測手掌
+    handEndTime = time.time()
+    print(f"hand:{handEndTime - handStartTime}")
+
     predictedResult = 13
     probabilities = 0
     if isBothExist(results):
         imageHandPosePredict.missCounter = 0  # miss
         currentFeature = recorder.record2HandPerFrame(results)
-        predictedResult, probabilities = combineAndPredict(currentFeature)
-        if probabilities > 0.7:
-            if predictedResult < 13 and predictedResult // 2 == lastResult // 2:
-                predictedResult = lastResult  # block reverse move
+        if len(currentFeature) == 84:  # 確認為fearures個特徵
+            predictedResult, probabilities = combineAndPredict(currentFeature)
+            if probabilities > 0.7:
+                if predictedResult < 13 and predictedResult // 2 == lastResult // 2:
+                    predictedResult = lastResult  # block reverse move
+                else:
+                    lastResult = predictedResult
             else:
-                lastResult = predictedResult
-        else:
-            predictedResult = lastResult
+                predictedResult = lastResult
 
     else:
         if missCounter >= maxMissCounter:
@@ -257,7 +254,7 @@ def imageHandPosePredict(RGBImage):
             predictCount = 0
         else:
             imageHandPosePredict.missCounter = imageHandPosePredict.missCounter + 1
-    return predictedResult, probabilities
+    return predictedResult, probabilities, results
 
 
 while True:
@@ -266,12 +263,14 @@ while True:
         exit()
     isCatchered, BGRImage = frameReceiver.getBGRImage()
     # BGRImage -> 畫面， RGBImage -> model
+
     RGBImage = frameReceiver.BGRToRGB(BGRImage)
+
     if not isCatchered:
         print("Cannot receive frame")
         break
 
-    predictedResult, probabilities = imageHandPosePredict(RGBImage)
+    predictedResult, probabilities, results = imageHandPosePredict(RGBImage)
 
     BGRImage = drawResultOnImage(
         image=BGRImage,
@@ -279,14 +278,17 @@ while True:
         probabilities=probabilities,
     )
 
-    # BGRImage = drawNodeOnImage(results=results, image=BGRImage)  # 可移除
+    BGRImage = drawNodeOnImage(results=results, image=BGRImage)  # 可移除
     # BGRImage = LeftRightHandClassify(BGRImage, results)  # 可移除
 
     cv2.imshow("hand tracker", BGRImage)
-    if cv2.waitKey(5) == ord("q"):
+
+    if cv2.waitKey(1) == ord("q"):
         break  # 按下 q 鍵停止
+
     if cv2.getWindowProperty("hand tracker", cv2.WND_PROP_VISIBLE) < 1:
         break
+
 
 frameReceiver.camera.release()
 cv2.destroyAllWindows()
