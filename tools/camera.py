@@ -16,7 +16,7 @@ class Camera:
         cv2.putText(
             image,
             f"fps : {int(fps)}",
-            (30, 50),
+            (image.shape[1] - 620, 50),
             cv2.FONT_HERSHEY_COMPLEX,
             1,
             (255, 0, 0),

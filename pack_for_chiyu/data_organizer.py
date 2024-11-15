@@ -1,7 +1,6 @@
 import numpy as np
 
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "utils")))
-# import data_set_2hands
+# from numba import jit
 
 
 class DataOrganizer:
@@ -9,14 +8,66 @@ class DataOrganizer:
         npArray = npArray[:, 1:, :]
         return npArray
 
+    def removePalmNode(self, inputList):
+        palm = [
+            0,
+            1,
+            2,
+            3,
+            10,
+            11,
+            18,
+            19,
+            26,
+            27,
+            34,
+            35,
+            42,
+            43,
+            44,
+            45,
+            52,
+            53,
+            60,
+            61,
+            68,
+            69,
+            76,
+            77,
+        ]
+        inputList = np.delete(inputList, palm, axis=2)  # 刪除對應的索引(in features)
+        return inputList
+
+    def keepIndexFingerAndTips(self,inputList):
+        fingerAndTips = np.array([
+            0, 1, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+            24, 25, 32, 33, 40, 41, 42, 43, 50, 51, 52,
+            53, 54, 55, 56, 57, 58, 59, 66, 67, 74, 75,
+            82, 83
+        ])
+        filtered_array = np.take(inputList, fingerAndTips, axis=2)
+        return filtered_array
+
+    # @staticmethod
+    # @jit(nopython=True)
     def preprocessingData(self, inputList):
         inputList = np.array(inputList)
         inputList = self.normalizedWithEachTimeSteps(inputList)
         # inputList = self.getRelativeWithFirstTimeStep(inputList)
         inputList = self.getRelativeLocation(inputList)
+        inputList = self.removePalmNode(inputList)
         return inputList
 
-    def getRelativeLocation(self, npArray):  # 輸入:(data number,time step, features)
+    def preprocessingForShirnkModel(self, inputList):
+        inputList = np.array(inputList)
+        inputList = self.normalizedWithEachTimeSteps(inputList)
+        inputList = self.getRelativeLocation(inputList)
+        inputList = self.keepIndexFingerAndTips(inputList)
+        return inputList
+
+    @staticmethod
+    # @jit(nopython=True)
+    def getRelativeLocation(npArray):  # 輸入:(data number,time step, features)
         for i in range(len(npArray)):
             for j in range(len(npArray[i])):
                 originX = npArray[i][j][0]
@@ -28,8 +79,10 @@ class DataOrganizer:
                         npArray[i][j][k] = npArray[i][j][k] - originY
         return npArray
 
+    @staticmethod
+    # @jit(nopython=True)
     def normalizedWithEachTimeSteps(
-        self, inputList
+        inputList,
     ):  # 輸入:(data number,time step, features)
 
         for i in range(len(inputList)):
@@ -38,6 +91,14 @@ class DataOrganizer:
                     inputList[i, j].max() - inputList[i, j].min()
                 )
         return inputList
+
+    def normalizedOneDimensionList(self, inputList):
+        npInputList = np.array(inputList)
+        normalizedList = (npInputList - npInputList.min()) / (
+            npInputList.max() - npInputList.min()
+        )
+        normalizedList = normalizedList.tolist()
+        return normalizedList
 
     def getRelativeWithFirstTimeStep(self, npArray):
         for i in range(len(npArray)):

@@ -11,22 +11,24 @@ np.set_printoptions(threshold=np.inf)
 timeSteps = 21
 features = 60
 output = 13
+
 dataLengthList = []
 organizer = do.DataOrganizer()
 labelsMappingList = [
-    "B'(Back Clockwise)",
-    "B (Back Counter Clockwise)",
-    "D'(Bottom Left)",
-    "D (Bottom Right)",
-    "F (Front Clockwise)",
-    "F' (Front Counter Clockwise)",
-    "L'(Left Down)",
-    "L (Left Up)",
-    "R (Right Down)",
-    "R'(Right Up)",
-    "U (Top Left)",
-    "U'(Top Right)",
+    "B'",
+    "B ",
+    "D'",
+    "D ",
+    "F ",
+    "F'",
+    "L'",
+    "L ",
+    "R ",
+    "R'",
+    "U'",
+    "U ",
     "Stop",
+    "wait",
 ]
 evaluator = me.ModelEvaluator(labelsMappingList)
 
@@ -139,6 +141,7 @@ for i in dataLengthList:
     labelsPointer = labelsPointer + i
     labelsValue = labelsValue + 1
 # =========================
+print(f"label:{labels.shape}")
 print("building model")
 # 定義模型
 inputs = layers.Input(shape=(None, features), name="input")
@@ -150,16 +153,9 @@ lstmLayer = layers.Bidirectional(
         return_sequences=True,
     )
 )(inputs)
-lstmLayer = layers.Bidirectional(
-    layers.LSTM(
-        256,
-        activation="tanh",
-        kernel_regularizer=regularizers.l2(0.01),
-        return_sequences=True,
-    )
-)(lstmLayer)
 lstmLayer = layers.Dense(output + 1, activation="softmax")(lstmLayer)
 lstmModel = keras.Model(inputs, lstmLayer)
+
 
 # lstmModel = keras.models.Sequential()
 # lstmModel.add(
@@ -242,9 +238,8 @@ print("labelLength example:", labelLength[:10])
 labels = np.expand_dims(labels, -1)
 target_shape = (labels.shape[0], output + 1)
 padded_labels = np.full(target_shape, labels[:, 0:1], dtype=labels.dtype)
-padded_labels[:, :labels.shape[1]] = labels
+padded_labels[:, : labels.shape[1]] = labels
 labels = padded_labels
-
 
 
 inputLength = np.expand_dims(
@@ -264,8 +259,8 @@ labelLength = np.expand_dims(
 # =================
 ctcModel.fit(  
     [data, labels, inputLength, labelLength],
-    np.zeros(len(data)),
-    epochs=650,
+    labels,
+    epochs=350,
     batch_size=21,
     verbose=1,
     callbacks=[evaluator],
