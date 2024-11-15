@@ -72,6 +72,8 @@ def isHandMoving(results, currentFeature):  # 檢查finger tips是否被preproce
     fingertipsNodes = [8, 4] 
     maxReserveData = 16
     additionalReserve = 8
+    landMarkAdjustmentX = 1
+    landMarkAdjustmentY = 1
 
     leftFingertips = []
     rightFingertips = []
@@ -82,18 +84,18 @@ def isHandMoving(results, currentFeature):  # 檢查finger tips是否被preproce
         ):
             if handed.classification[0].label == "Left":
                 leftWrist = [
-                    handLandmarks.landmark[0].x,
-                    handLandmarks.landmark[0].y,
+                    handLandmarks.landmark[0].x*landMarkAdjustmentX,
+                    handLandmarks.landmark[0].y*landMarkAdjustmentY,
                 ]
 
                 for i in fingertipsNodes:
-                    leftFingertips.append(handLandmarks.landmark[i].x)
-                    leftFingertips.append(handLandmarks.landmark[i].y)
+                    leftFingertips.append(handLandmarks.landmark[i].x*landMarkAdjustmentX)
+                    leftFingertips.append(handLandmarks.landmark[i].y*landMarkAdjustmentY)
             elif handed.classification[0].label == "Right":
 
                 for i in fingertipsNodes:
-                    rightFingertips.append(handLandmarks.landmark[i].x)
-                    rightFingertips.append(handLandmarks.landmark[i].y)
+                    rightFingertips.append(handLandmarks.landmark[i].x*landMarkAdjustmentX)
+                    rightFingertips.append(handLandmarks.landmark[i].y*landMarkAdjustmentY)
         currentFingertips = leftFingertips + rightFingertips
 
         for i in range(len(currentFingertips)):
