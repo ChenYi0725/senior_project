@@ -264,6 +264,7 @@ def imageHandPosePredict(RGBImage):
         imageHandPosePredict.startTime = 0  # 用於計算免檢查通行次數
 
     results = hands.process(RGBImage)  # 偵測手掌
+    results = recorder.customLR(results)    #修改雙手label
     predictedResult = waitCode
     probabilities = 0
 

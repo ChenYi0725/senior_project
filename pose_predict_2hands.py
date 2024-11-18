@@ -19,7 +19,7 @@ def ctcLossFunction(args):
     return tf.keras.backend.ctc_batch_cost(labels, yPred, inputLength, labelLength)
 
 
-frameReceiver = camera.Camera()
+frameReceiver = camera.Camera(0)
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法

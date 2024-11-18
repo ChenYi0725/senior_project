@@ -2,7 +2,7 @@ import data_organizer as data_organizer
 
 organizer = data_organizer.DataOrganizer()
 num = 0  # 未達需求的資料集數量
-neededData = 200
+neededData = 100
 
 
 def checkData(fileLocation):
@@ -28,20 +28,33 @@ def cleanData(fileLocation, errorData):
 
 
 print("start")
+checkData("front_view_dataset\\U")
+checkData("front_view_dataset\\U'")
+checkData("front_view_dataset\\F")
+checkData("front_view_dataset\\F'_thumb")
+cleanData("front_view_dataset\\F",77)
+checkData("front_view_dataset\\R")
+checkData("front_view_dataset\\R'")
+checkData("front_view_dataset\\L")
+checkData("front_view_dataset\\L'")
+checkData("front_view_dataset\\stop")
 
-checkData("data_set_2hands\\left_down_2hands")
-checkData("data_set_2hands\\left_up_2hands")
-checkData("data_set_2hands\\top_left_2hands")
-checkData("data_set_2hands\\top_right_2hands")
-checkData("data_set_2hands\\stop_2hands")
-checkData("data_set_2hands\\right_up_2hands")
-checkData("data_set_2hands\\right_down_2hands")
-checkData("data_set_2hands\\bottom_left_2hands")
-checkData("data_set_2hands\\bottom_right_2hands")
-checkData("data_set_2hands\\front_clockwise_2hands")
-checkData("data_set_2hands\\front_counter_clockwise_2hands")
-checkData("data_set_2hands\\back_clockwise_2hands")
-checkData("data_set_2hands\\back_counter_clockwise_2hands")
+
+
+
+# checkData("data_set_2hands\\left_down_2hands")
+# checkData("data_set_2hands\\left_up_2hands")
+# checkData("data_set_2hands\\top_left_2hands")
+# checkData("data_set_2hands\\top_right_2hands")
+# checkData("data_set_2hands\\stop_2hands")
+# checkData("data_set_2hands\\right_up_2hands")
+# checkData("data_set_2hands\\right_down_2hands")
+# checkData("data_set_2hands\\bottom_left_2hands")
+# checkData("data_set_2hands\\bottom_right_2hands")
+# checkData("data_set_2hands\\front_clockwise_2hands")
+# checkData("data_set_2hands\\front_counter_clockwise_2hands")
+# checkData("data_set_2hands\\back_clockwise_2hands")
+# checkData("data_set_2hands\\back_counter_clockwise_2hands")
 # cleanData("test_data_set\\stop_test",142)
 # ----------------------------------------------
 # checkData("test_data_set\\stop_test")

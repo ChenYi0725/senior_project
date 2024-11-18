@@ -10,7 +10,7 @@ mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 recorder = rd.Recorder()
-frameReceiver = camera.Camera()
+frameReceiver = camera.Camera(1) #0->電腦攝影機，1 -> 手機
 
 rightFeaturePerData = []
 leftFeaturePerData = []
@@ -105,6 +105,7 @@ def putTextOnIndexFinger(image, handLandmarks, text):
     return image
 
 
+
 def onMouse(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         if recorder.isRecording == False:
@@ -152,13 +153,13 @@ with mpHandsSolution.Hands(
     while True:
         isCatchered, BGRImage = frameReceiver.getBGRImage()
         # BGRImage ->畫面 RGBImage->model
-        RGBImage = frameReceiver.BGRToRGB(BGRImage)
 
         if not isCatchered:
             print("Cannot receive frame")
             break
-
+        RGBImage = frameReceiver.BGRToRGB(BGRImage)
         results = hands.process(RGBImage)  # 偵測手掌
+        results = recorder.customLR(results)
         # if isLRExist(results):
         #     cv2.putText(
         #         BGRImage,
@@ -170,7 +171,7 @@ with mpHandsSolution.Hands(
         #         2,
         #     )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
-
+            
         if recorder.isRecording and isLRExist(results):
             BGRImage = recordingSign(BGRImage)
             featurePerData = recorder.recordBothHand(results, featurePerData)
@@ -181,7 +182,7 @@ with mpHandsSolution.Hands(
         else:
             pass
 
-        # BGRImage = LRMovement(BGRImage, results)
+        BGRImage = LRMovement(BGRImage, results)
         BGRImage = drawRecordedTime(BGRImage)
         cv2.imshow("hand tracker", BGRImage)
         cv2.setMouseCallback("hand tracker", onMouse)  # 滑鼠事件
@@ -196,6 +197,6 @@ featuresString = str(featurePerProcess)
 with open("result.txt", "w") as f:
     featuresString = featuresString[1:-1]
     f.write(featuresString)
-
+print("save in result.txt")
 frameReceiver.camera.release()
 cv2.destroyAllWindows()

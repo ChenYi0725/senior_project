@@ -10,8 +10,20 @@ import tensorflow as tf
 from keras import regularizers
 from keras import layers
 import where_the_magic_happened
+import where_the_front_magic_happen
 
 # from LSTM_2hands_model_trainer import ctcLossFunction
+
+def LRMovement(image, results):
+    if results.multi_hand_landmarks:
+        for handLandmarks, handed in zip(
+            results.multi_hand_landmarks, results.multi_handedness
+        ):
+            if handed.classification[0].label == "Left":
+                image = putTextOnIndexFinger(image, handLandmarks, "L")
+            elif handed.classification[0].label == "Right":
+                image = putTextOnIndexFinger(image, handLandmarks, "R")
+    return image
 
 
 def ctcLossFunction(args):
@@ -19,7 +31,7 @@ def ctcLossFunction(args):
     return tf.keras.backend.ctc_batch_cost(labels, yPred, inputLength, labelLength)
 
 
-frameReceiver = camera.Camera()
+frameReceiver = camera.Camera(1)
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
@@ -27,6 +39,8 @@ mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 
 def drawResultOnImage(image, resultString, probabilities):
     global tempResultKeeper
+    # textLocationX = image.shape[1] - 620
+    textLocationX = 20
     if resultString == "wait":
         resultString = tempResultKeeper
     else:
@@ -36,7 +50,7 @@ def drawResultOnImage(image, resultString, probabilities):
     cv2.putText(
         image,
         resultString,
-        (image.shape[1] - 620, 100),
+        (textLocationX, 100),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
         (255, 0, 0),
@@ -45,7 +59,7 @@ def drawResultOnImage(image, resultString, probabilities):
     cv2.putText(
         image,
         f"probabilities:{probabilities}",
-        (image.shape[1] - 620, 150),
+        (textLocationX, 150),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
         (255, 0, 0),
@@ -119,15 +133,15 @@ while True:
     # BGRImage -> 畫面， RGBImage -> model
 
     RGBImage = frameReceiver.BGRToRGB(BGRImage)
-
+    
     if not isCatchered:
         print("Cannot receive frame")
         break
 
     resultString, probabilities, results = (
-        where_the_magic_happened.imageHandPosePredict(RGBImage)
+        where_the_front_magic_happen.imageHandPosePredict(RGBImage)
     )
-    cv2.imshow("pose predict with no result", BGRImage)
+
     # resultString, probabilities, results = imageHandPosePredict(RGBImage)
     # noResultImage = BGRImage
     BGRImage = drawResultOnImage(
@@ -137,7 +151,7 @@ while True:
     )
 
     BGRImage = drawNodeOnImage(results=results, image=BGRImage)  # 可移除
-    # BGRImage = LeftRightHandClassify(BGRImage, results)  # 可移除
+    BGRImage = LRMovement(BGRImage, results)  # 可移除
 
     cv2.imshow("pose predict", BGRImage)
 
