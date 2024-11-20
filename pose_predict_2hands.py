@@ -9,7 +9,7 @@ import time
 import tensorflow as tf
 from keras import regularizers
 from keras import layers
-import where_the_magic_happened
+import pose_predict_system
 
 # from LSTM_2hands_model_trainer import ctcLossFunction
 
@@ -125,7 +125,7 @@ while True:
         break
 
     resultString, probabilities, results = (
-        where_the_magic_happened.imageHandPosePredict(RGBImage)
+        pose_predict_system.imageHandPosePredict(RGBImage)
     )
     cv2.imshow("pose predict with no result", BGRImage)
     # resultString, probabilities, results = imageHandPosePredict(RGBImage)

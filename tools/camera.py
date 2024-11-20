@@ -45,7 +45,7 @@ class Camera:
 
 
     def adaptDroidCam(self, image):
-        if self.videoDevice == 1:
+        if not self.videoDevice == 0:
             image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
 
 

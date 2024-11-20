@@ -9,7 +9,7 @@ import time
 import tensorflow as tf
 from keras import regularizers
 from keras import layers
-import where_the_magic_happened
+import pose_predict_system
 import where_the_front_magic_happen
 
 # from LSTM_2hands_model_trainer import ctcLossFunction

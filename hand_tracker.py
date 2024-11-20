@@ -10,7 +10,7 @@ mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 recorder = rd.Recorder()
-frameReceiver = camera.Camera(1) #0->電腦攝影機，1 -> 手機
+frameReceiver = camera.Camera("http://10.200.36.147:4747/video") #0->電腦攝影機，1 -> 手機
 
 rightFeaturePerData = []
 leftFeaturePerData = []
