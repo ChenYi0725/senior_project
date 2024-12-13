@@ -29,14 +29,11 @@ def cleanData(fileLocation, errorData):
 
 print("start")
 # checkData("front_view_dataset\\U")
-checkData("front_view_dataset\\U'_bright")
-# checkData("front_view_dataset\\F")
-# checkData("front_view_dataset\\F'_thumb")
-# cleanData("front_view_dataset\\F",77)
-# checkData("front_view_dataset\\R")
-# checkData("front_view_dataset\\R'")
-# checkData("front_view_dataset\\L")
-# checkData("front_view_dataset\\L'")
+# checkData("front_view_dataset\\bright_dataset\\F'")
+# checkData("front_view_dataset\\bright_dataset\\F")
+# checkData("front_view_dataset\\bright_dataset\\F'")
+# checkData("front_view_dataset\\bright_dataset\\L")
+checkData("front_view_dataset\\bright_dataset\\L'")
 # checkData("front_view_dataset\\stop")
 
 
