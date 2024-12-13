@@ -4,7 +4,7 @@ import tools.data_organizer as do
 from keras import regularizers
 from keras import layers
 import numpy as np
-import tools.model_evaluator as me
+import model_evaluator as me
 
 np.set_printoptions(threshold=np.inf)
 
@@ -30,7 +30,7 @@ labelsMappingList = [
     "Stop",
     "wait",
 ]
-# evaluator = me.ModelEvaluator(labelsMappingList)
+evaluator = me.ModelEvaluator(labelsMappingList)
 
 
 def ctcLossFunction(args):
@@ -163,10 +163,10 @@ print("Start Training")
 model.fit(
     data,
     labels,
-    epochs=300,
+    epochs=350,
     batch_size=21,
     verbose=1,
-    # callbacks=[evaluator],
+    callbacks=[evaluator],
 )
 
 # evaluateModel(ctcModel, data, labels, inputLength, labelLength)

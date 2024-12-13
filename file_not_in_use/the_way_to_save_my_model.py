@@ -4,7 +4,7 @@ import tools.data_organizer as do
 from keras import regularizers
 from keras import layers
 import numpy as np
-import tools.model_evaluator as me
+import model_evaluator as me
 import tools.data_organizer as do
 
 organizer = do.DataOrganizer()
