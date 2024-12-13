@@ -2,7 +2,7 @@ import data_organizer as data_organizer
 
 organizer = data_organizer.DataOrganizer()
 num = 0  # 未達需求的資料集數量
-neededData = 100
+neededData = 300
 
 
 def checkData(fileLocation):
