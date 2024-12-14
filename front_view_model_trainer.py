@@ -63,15 +63,15 @@ def evaluateModel(model, data, labels, inputLength, labelLength):
 
 # ========================
 print("loading data")
-FData = organizer.getDataFromTxt("front_view_dataset/F")
-FPData = organizer.getDataFromTxt("front_view_dataset/F'_thumb")
-LPData = organizer.getDataFromTxt("front_view_dataset/L'")
-LData = organizer.getDataFromTxt("front_view_dataset/L")
-RData = organizer.getDataFromTxt("front_view_dataset/R")
-RPData = organizer.getDataFromTxt("front_view_dataset/R'")
-UPData = organizer.getDataFromTxt("front_view_dataset/U'")
-UData = organizer.getDataFromTxt("front_view_dataset/U")
-
+FData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/F")
+FPData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/F'")
+LPData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/L'")
+LData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/L")
+RData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/R")
+RPData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/R'")
+UPData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/U'")
+UData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/U")
+stopData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/stop")
 
 # ==========================
 print("init Data")
@@ -84,11 +84,12 @@ RData = initData(RData)
 RPData = initData(RPData)
 UPData = initData(UPData)
 UData = initData(UData)
+stopData = initData(stopData)
 # =====================
 
 
 data = np.concatenate(
-    (FData, FPData, LPData, LData, RData, RPData, UPData, UData),
+    (FData, FPData, LPData, LData, RData, RPData, UPData, UData,stopData),
     axis=0,
 )
 
