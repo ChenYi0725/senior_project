@@ -64,7 +64,7 @@ resultsList = [
 # ]
 # stopCode = 12
 # waitCode = 13
-stopCode = 3
+stopCode = 2
 waitCode = 12
 lastResult = waitCode
 # currentFeature = []  # 目前畫面的資料
@@ -252,16 +252,16 @@ def predict(continuousFeature):
 
 def blockIllegalResult(probabilities, lastResult, currentResult):
     if probabilities > 0.65:
-        if currentResult in [stopCode, waitCode]:  # stop, wait 不動
+        if currentResult in [2,5,8,11, 12,13,14,15]:  # stop, wait 不動
             return currentResult
 
         if currentResult == lastResult:  # block same move
             return waitCode  # wait
 
-        if lastResult != stopCode and (lastResult // 2) == (
-            currentResult // 2
-        ):  # block reverse move
-            return lastResult
+        # if lastResult != stopCode and (lastResult // 2) == (
+        #     currentResult // 2
+        # ):  # block reverse move
+        #     return lastResult
 
         return currentResult
     else:

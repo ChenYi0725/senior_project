@@ -258,10 +258,10 @@ def blockIllegalResult(probabilities, lastResult, currentResult):
         if currentResult == lastResult:  # block same move
             return waitCode  # wait
 
-        if lastResult != stopCode and (lastResult // 2) == (
-            currentResult // 2
-        ):  # block reverse move
-            return lastResult
+        # if lastResult != stopCode and (lastResult // 2) == (
+        #     currentResult // 2
+        # ):  # block reverse move
+        #     return lastResult
 
         return currentResult
     else:
