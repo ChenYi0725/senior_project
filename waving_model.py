@@ -60,15 +60,15 @@ def drawResultOnImage(image, resultString, probabilities):
         (255, 0, 0),
         2,
     )
-    cv2.putText(
-        image,
-        f"probabilities:{probabilities}",
-        (image.shape[1] - 620, 150),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        1,
-        (255, 0, 0),
-        2,
-    )
+    # cv2.putText(
+    #     image,
+    #     f"probabilities:{probabilities}",
+    #     (image.shape[1] - 620, 150),
+    #     cv2.FONT_HERSHEY_SIMPLEX,
+    #     1,
+    #     (255, 0, 0),
+    #     2,
+    # )
     # cv2.putText(
     #     image,
     #     f"timeSteps{len(where_the_magic_happened.continuousFeature)}",

@@ -33,11 +33,7 @@ hands = mpHandsSolution.Hands(
     min_tracking_confidence=0.5,
 )
 
-checkList = [
-    "H",
-    "v",
-    "stop"
-]
+checkList = ["H", "v", "stop"]
 
 
 resultsList = [
@@ -140,7 +136,7 @@ def isHandMoving(results, currentFeature):
     if not hasattr(isHandMoving, "lastHand"):
         isHandMoving.lastHand = "none"
 
-    threshold = [0.09, 0.12]
+    threshold = [0.09, 0.09]
     fingertipsNodes = [8, 4]  # 指尖的節點索引
     maxReserveData = 5  # 最大保留的時間步數
     additionalReserve = 2  # 額外保留數據
@@ -372,7 +368,6 @@ def imageHandPosePredict(RGBImage):
             imageHandPosePredict.handMovingPassCount = (
                 imageHandPosePredict.handMovingPassCount - 1
             )
-                
 
     else:
         if imageHandPosePredict.missCounter >= maxMissCounter:

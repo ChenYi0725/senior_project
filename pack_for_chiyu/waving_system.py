@@ -136,7 +136,7 @@ def isHandMoving(results, currentFeature):
     if not hasattr(isHandMoving, "lastHand"):
         isHandMoving.lastHand = "none"
 
-    threshold = [0.09, 0.12]
+    threshold = [0.09, 0.09]
     fingertipsNodes = [8, 4]  # 指尖的節點索引
     maxReserveData = 5  # 最大保留的時間步數
     additionalReserve = 2  # 額外保留數據

@@ -14,6 +14,24 @@ import mediapipe as mp
 import keras
 import body_predict_system
 
+# 我想起來忘記跟你講操作方式
+# 分成 水平 跟 鉛直 兩種移動、左右手(單手)、握拳 張開 共8種動作 + stop
+# 左手:
+#   握拳:
+#       鉛直: u'
+#       水平: f'
+#   張開:
+#       鉛直: l'
+#       水平: l
+# 右手:
+#   握拳:
+#       鉛直: u
+#       水平: f
+#   張開:
+#       鉛直: r'
+#       水平: r
+    
+
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret!"
