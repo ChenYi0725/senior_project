@@ -12,6 +12,7 @@ import pack_for_chiyu.data_organizer as do
 import pack_for_chiyu.recorder as rd
 import mediapipe as mp
 import keras
+import body_predict_system
 
 
 app = Flask(__name__)
@@ -30,9 +31,10 @@ def rotation(image):
         image = Image.open(BytesIO(base64.b64decode(image)))
         image = ImageOps.mirror(image)  # Flip the image horizontally
         image = np.array(image)
-        predictedResult, probabilities = the_ultimate_function.picture_in_result_out(
-            image
-        )
+        # predictedResult, probabilities = the_ultimate_function.picture_in_result_out(
+        #     image
+        # )
+        predictedResult, probabilities = body_predict_system.imageHandPosePredict(image)
         print("predictedResult: ", predictedResult, "probabilities: ", probabilities)
         result = {"predictedResult": predictedResult, "probabilities": probabilities}
         socketio.emit("rotation", result)

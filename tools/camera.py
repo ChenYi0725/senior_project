@@ -3,7 +3,6 @@ import time
 
 
 class Camera:
-
     def __init__(self,videoDevice):
         self.isCameraOn = True
         self.videoDevice = videoDevice
