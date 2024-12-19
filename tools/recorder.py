@@ -26,6 +26,31 @@ class Recorder:
                 del featurePerData[0]
         return featurePerData
 
+    def recordOneHand(self, results,featurePerData):
+        if self.recordedTimes < self.neededTimes:
+            featurePerFrame = []
+            if results.multi_hand_landmarks:
+                # 僅處理第一隻手的數據
+                handLandmarks = results.multi_hand_landmarks[0]
+
+                if handLandmarks.landmark:
+                    for landmark in handLandmarks.landmark:
+                        featurePerFrame.append(landmark.x)
+                        featurePerFrame.append(landmark.y)
+
+                featurePerData.append(featurePerFrame)
+                self.recordedTimes += 1
+
+        else:
+            self.featurePerData = []
+            self.recordedTimes = 0
+            self.isRecording = False
+            self.isFinish = True
+
+        return featurePerData
+
+
+
     def recordBothHand(self, results, featurePerData):
         if self.recordedTimes < self.neededTimes:
             featurePerFrame = []

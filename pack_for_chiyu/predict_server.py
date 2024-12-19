@@ -34,6 +34,7 @@ def rotation(image):
         # predictedResult, probabilities = the_ultimate_function.picture_in_result_out(
         #     image
         # )
+        # predictedResult, probabilities = body_predict_system.imageHandPosePredict(image)
         predictedResult, probabilities = body_predict_system.imageHandPosePredict(image)
         print("predictedResult: ", predictedResult, "probabilities: ", probabilities)
         result = {"predictedResult": predictedResult, "probabilities": probabilities}

@@ -33,11 +33,7 @@ hands = mpHandsSolution.Hands(
     min_tracking_confidence=0.5,
 )
 
-checkList = [
-    "H",
-    "v",
-    "stop"
-]
+checkList = ["H", "v", "stop"]
 
 
 resultsList = [
@@ -368,11 +364,10 @@ def imageHandPosePredict(RGBImage):
             if predictedResult not in [12, 13, 14, 15]:
                 resultString = resultsList[predictedResult + 3 * (mode)]
                 print(resultString)
-                return resultString, probabilities, results
+                return resultString, probabilities
             imageHandPosePredict.handMovingPassCount = (
                 imageHandPosePredict.handMovingPassCount - 1
             )
-                
 
     else:
         if imageHandPosePredict.missCounter >= maxMissCounter:
@@ -386,7 +381,7 @@ def imageHandPosePredict(RGBImage):
             imageHandPosePredict.missCounter += 1
 
     resultString = resultsList[waitCode]
-    return resultString, probabilities, results
+    return resultString, probabilities
 
 
 def clearCurrentData():

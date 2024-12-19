@@ -142,16 +142,17 @@ while True:
         print("Cannot receive frame")
         break
 
-    # resultString, probabilities, results = waving_system.imageHandPosePredict(RGBImage)
-    # # resultString, probabilities, results = imageHandPosePredict(RGBImage)
-    # # noResultImage = BGRImage
-    # BGRImage = drawResultOnImage(
-    #     image=BGRImage,
-    #     resultString=resultString,
-    #     probabilities=probabilities,
-    # )
-    results = hands.process(BGRImage)
-    print(waving_system.isFist(results))
+    resultString, probabilities, results = waving_system.imageHandPosePredict(RGBImage)
+    # resultString, probabilities, results = imageHandPosePredict(RGBImage)
+    # noResultImage = BGRImage
+    BGRImage = drawResultOnImage(
+        image=BGRImage,
+        resultString=resultString,
+        probabilities=probabilities,
+    )
+    # results = hands.process(BGRImage)
+    # print(waving_system.modeClassification(results))
+
     BGRImage = drawNodeOnImage(results=results, image=BGRImage)  # 可移除
     BGRImage = leftRightHandClassify(BGRImage, results)  # 可移除
 

@@ -38,6 +38,12 @@ class DataOrganizer:
         filtered_array = np.take(inputList, fingerAndTips, axis=2)
         return filtered_array
 
+    def preprocessExhibitData(self,inputList):
+        inputList = np.array(inputList)
+        inputList = self._normalizedWithEachTimeSteps(inputList)
+        inputList = self._getRelativeWithFirstTimeStep(inputList)
+        return inputList
+    
     # @staticmethod
     # @jit(nopython=True)
     def preprocessData(self, inputList):
@@ -131,7 +137,7 @@ class DataOrganizer:
                 errorList.append(i)
                 continue
             for j in range(len(targetFile[i])):
-                if not len(targetFile[i][j]) == 84:
+                if not len(targetFile[i][j]) == 42:
                     errorList.append(i)
                 continue
         return errorList

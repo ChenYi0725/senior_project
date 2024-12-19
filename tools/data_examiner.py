@@ -2,7 +2,7 @@ import data_organizer as data_organizer
 
 organizer = data_organizer.DataOrganizer()
 num = 0  # 未達需求的資料集數量
-neededData = 300
+neededData = 200
 
 
 def checkData(fileLocation):
@@ -28,12 +28,14 @@ def cleanData(fileLocation, errorData):
 
 
 print("start")
-# checkData("front_view_dataset\\U")
+checkData("exhibit_data_set/horizontal")
+checkData("exhibit_data_set\\vertical")
+checkData("exhibit_data_set/stop")
 # checkData("front_view_dataset\\bright_dataset\\F'")
 # checkData("front_view_dataset\\bright_dataset\\F")
 # checkData("front_view_dataset\\bright_dataset\\F'")
 # checkData("front_view_dataset\\bright_dataset\\L")
-checkData("front_view_dataset\\bright_dataset\\L'")
+# checkData("front_view_dataset\\bright_dataset\\L'")
 # checkData("front_view_dataset\\stop")
 
 

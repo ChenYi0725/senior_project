@@ -13,8 +13,8 @@ mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 recorder = rd.Recorder()
 frameReceiver = camera.Camera(0)  # 0->電腦攝影機，1 -> 手機
 
-rightFeaturePerData = []
-leftFeaturePerData = []
+# rightFeaturePerData = []
+# leftFeaturePerData = []
 featurePerData = []
 continuousFeature = []  # 目前抓到的前面
 featurePerProcess = []  # 這次執行所抓到的資料
@@ -143,7 +143,7 @@ def recordingSign(image):
 # mediapipe 啟用偵測手掌
 with mpHandsSolution.Hands(
     model_complexity=0,
-    max_num_hands=2,
+    max_num_hands=1,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5,
 ) as hands:
@@ -172,9 +172,10 @@ with mpHandsSolution.Hands(
         #     )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
 
-        if recorder.isRecording and isLRExist(results):
+        if recorder.isRecording:  # and isLRExist(results):
             BGRImage = recordingSign(BGRImage)
-            featurePerData = recorder.recordBothHand(results, featurePerData)
+            # featurePerData = recorder.recordBothHand(results, featurePerData)
+            featurePerData = recorder.recordOneHand(results, featurePerData)
             if recorder.isFinish:
                 featurePerProcess.append(featurePerData)
                 featurePerData = []
