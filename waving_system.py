@@ -4,6 +4,7 @@ import keras
 import tools.recorder as rd
 import numpy as np
 import time
+import math
 
 recorder = rd.Recorder()
 organizer = do.DataOrganizer()
@@ -27,7 +28,7 @@ predictFrequence = 1
 predictCount = 0
 hands = mpHandsSolution.Hands(
     model_complexity=0,
-    max_num_hands=2,
+    max_num_hands=1,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5,
 )
@@ -60,6 +61,33 @@ missCounter = 0
 maxMissCounter = 10
 
 
+def calculateDistance(point1, point2):
+    return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
+
+
+def isFist(results):
+    fingerCount = 0
+    if results.multi_hand_landmarks:
+        for handLandmarks, handed in zip(
+            results.multi_hand_landmarks, results.multi_handedness
+        ):
+
+            wrist = [
+                handLandmarks.landmark[0].x,
+                handLandmarks.landmark[0].y,
+            ]
+            for i in [8, 12, 16, 20]:
+                finger = [handLandmarks.landmark[i].x, handLandmarks.landmark[i].y]
+                palm = [
+                    handLandmarks.landmark[i - 3].x,
+                    handLandmarks.landmark[i - 3].y,
+                ]
+                if calculateDistance(finger, wrist) > calculateDistance(palm, wrist):
+                    fingerCount = fingerCount + 1
+        if fingerCount > 2:
+            return False
+        else:
+            return True
 
 
 def isHandMoving(results, currentFeature):  # 檢查finger tips是否被preprocessing 影響
@@ -70,7 +98,7 @@ def isHandMoving(results, currentFeature):  # 檢查finger tips是否被preproce
         isHandMoving.previousFingertips = []
 
     threshold = [0.09, 0.12]
-    fingertipsNodes = [8, 4] 
+    fingertipsNodes = [8, 4]
     maxReserveData = 16
     additionalReserve = 8
     landMarkAdjustmentX = 1
@@ -85,18 +113,26 @@ def isHandMoving(results, currentFeature):  # 檢查finger tips是否被preproce
         ):
             if handed.classification[0].label == "Left":
                 leftWrist = [
-                    handLandmarks.landmark[0].x*landMarkAdjustmentX,
-                    handLandmarks.landmark[0].y*landMarkAdjustmentY,
+                    handLandmarks.landmark[0].x * landMarkAdjustmentX,
+                    handLandmarks.landmark[0].y * landMarkAdjustmentY,
                 ]
 
                 for i in fingertipsNodes:
-                    leftFingertips.append(handLandmarks.landmark[i].x*landMarkAdjustmentX)
-                    leftFingertips.append(handLandmarks.landmark[i].y*landMarkAdjustmentY)
+                    leftFingertips.append(
+                        handLandmarks.landmark[i].x * landMarkAdjustmentX
+                    )
+                    leftFingertips.append(
+                        handLandmarks.landmark[i].y * landMarkAdjustmentY
+                    )
             elif handed.classification[0].label == "Right":
 
                 for i in fingertipsNodes:
-                    rightFingertips.append(handLandmarks.landmark[i].x*landMarkAdjustmentX)
-                    rightFingertips.append(handLandmarks.landmark[i].y*landMarkAdjustmentY)
+                    rightFingertips.append(
+                        handLandmarks.landmark[i].x * landMarkAdjustmentX
+                    )
+                    rightFingertips.append(
+                        handLandmarks.landmark[i].y * landMarkAdjustmentY
+                    )
         currentFingertips = leftFingertips + rightFingertips
 
         for i in range(len(currentFingertips)):
@@ -265,7 +301,7 @@ def imageHandPosePredict(RGBImage):
         imageHandPosePredict.startTime = 0  # 用於計算免檢查通行次數
 
     results = hands.process(RGBImage)  # 偵測手掌
-    results = recorder.customLR(results)    #修改雙手label
+    results = recorder.customLR(results)  # 修改雙手label
     predictedResult = waitCode
     probabilities = 0
 
@@ -305,9 +341,6 @@ def imageHandPosePredict(RGBImage):
             imageHandPosePredict.handMovingPassCount = (
                 imageHandPosePredict.handMovingPassCount - 1
             )
-            #     print(resultsList[predictedResult])
-            # # if not predictedResult == 13:
-            # #     print(resultsList[predictedResult])
 
     else:
         if imageHandPosePredict.missCounter >= maxMissCounter:

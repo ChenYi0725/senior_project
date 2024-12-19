@@ -3,7 +3,7 @@ import time
 
 
 class Camera:
-    def __init__(self,videoDevice):
+    def __init__(self, videoDevice):
         self.isCameraOn = True
         self.videoDevice = videoDevice
         self.camera = cv2.VideoCapture(videoDevice)  ##內部攝影機的編號為0
@@ -37,16 +37,16 @@ class Camera:
 
     def getBGRImage(self):
         isSecreenCaptured, image = self.camera.read()
+        image = cv2.flip(image, 1)
         image = self.adaptDroidCam(image)
         image = self._setImageHud(image)
+
         if isSecreenCaptured:
             return isSecreenCaptured, image
-
 
     def adaptDroidCam(self, image):
         if not self.videoDevice == 0:
             image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
-
 
         return image
 

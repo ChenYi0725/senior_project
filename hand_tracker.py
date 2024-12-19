@@ -4,13 +4,14 @@ import tools.camera as camera
 import tools.recorder as rd
 import time
 import os
+
 # 錄製的資料為先左手再右手
 
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 recorder = rd.Recorder()
-frameReceiver = camera.Camera(1) #0->電腦攝影機，1 -> 手機
+frameReceiver = camera.Camera(0)  # 0->電腦攝影機，1 -> 手機
 
 rightFeaturePerData = []
 leftFeaturePerData = []
@@ -105,7 +106,6 @@ def putTextOnIndexFinger(image, handLandmarks, text):
     return image
 
 
-
 def onMouse(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         if recorder.isRecording == False:
@@ -171,7 +171,7 @@ with mpHandsSolution.Hands(
         #         2,
         #     )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
-            
+
         if recorder.isRecording and isLRExist(results):
             BGRImage = recordingSign(BGRImage)
             featurePerData = recorder.recordBothHand(results, featurePerData)
@@ -194,7 +194,7 @@ with mpHandsSolution.Hands(
 
 featuresString = str(featurePerProcess)
 # 10 15 10
-with open("result.txt", "w") as f:
+with open("h.txt", "w") as f:
     featuresString = featuresString[1:-1]
     f.write(featuresString)
 print("save in result.txt")

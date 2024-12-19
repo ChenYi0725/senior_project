@@ -9,7 +9,7 @@ import time
 import tensorflow as tf
 from keras import regularizers
 from keras import layers
-import pose_predict_system
+import waving_system
 
 # from LSTM_2hands_model_trainer import ctcLossFunction
 
@@ -19,10 +19,28 @@ def ctcLossFunction(args):
     return tf.keras.backend.ctc_batch_cost(labels, yPred, inputLength, labelLength)
 
 
-frameReceiver = camera.Camera(1)
+frameReceiver = camera.Camera(0)
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
+hands = mpHandsSolution.Hands(
+    model_complexity=0,
+    max_num_hands=1,
+    min_detection_confidence=0.2,
+    min_tracking_confidence=0.2,
+)
+
+
+def leftRightHandClassify(image, results):
+    if results.multi_hand_landmarks:
+        for handLandmarks, handed in zip(
+            results.multi_hand_landmarks, results.multi_handedness
+        ):
+            if handed.classification[0].label == "Left":
+                image = putTextOnIndexFinger(image, handLandmarks, "L")
+            elif handed.classification[0].label == "Right":
+                image = putTextOnIndexFinger(image, handLandmarks, "R")
+    return image
 
 
 def drawResultOnImage(image, resultString, probabilities):
@@ -124,20 +142,18 @@ while True:
         print("Cannot receive frame")
         break
 
-    resultString, probabilities, results = (
-        pose_predict_system.imageHandPosePredict(RGBImage)
-    )
-    cv2.imshow("pose predict with no result", BGRImage)
-    # resultString, probabilities, results = imageHandPosePredict(RGBImage)
-    # noResultImage = BGRImage
-    BGRImage = drawResultOnImage(
-        image=BGRImage,
-        resultString=resultString,
-        probabilities=probabilities,
-    )
-
+    # resultString, probabilities, results = waving_system.imageHandPosePredict(RGBImage)
+    # # resultString, probabilities, results = imageHandPosePredict(RGBImage)
+    # # noResultImage = BGRImage
+    # BGRImage = drawResultOnImage(
+    #     image=BGRImage,
+    #     resultString=resultString,
+    #     probabilities=probabilities,
+    # )
+    results = hands.process(BGRImage)
+    print(waving_system.isFist(results))
     BGRImage = drawNodeOnImage(results=results, image=BGRImage)  # 可移除
-    # BGRImage = LeftRightHandClassify(BGRImage, results)  # 可移除
+    BGRImage = leftRightHandClassify(BGRImage, results)  # 可移除
 
     cv2.imshow("pose predict", BGRImage)
 

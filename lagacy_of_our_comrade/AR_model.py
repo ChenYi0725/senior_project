@@ -4,23 +4,23 @@ import numpy as np
 import tools.data_organizer as do
 import tools.camera as camera
 import tools.recorder as rd
-import pose_predict_system
+import body_predict_system
 import keras
 import time
 
 
-
 frameReceiver = camera.Camera(0)
-#--
+# --
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 
-#no
+
+# no
 def drawResultOnImage(image, resultString, probabilities):
     probabilities = str(probabilities)
     if not (resultString == "wait"):
-        pose_predict_system.showResult = resultString
+        body_predict_system.showResult = resultString
     cv2.putText(
         image,
         probabilities,
@@ -32,7 +32,7 @@ def drawResultOnImage(image, resultString, probabilities):
     )
     cv2.putText(
         image,
-        pose_predict_system.showResult,
+        body_predict_system.showResult,
         (image.shape[1] - 600, 100),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
@@ -42,7 +42,7 @@ def drawResultOnImage(image, resultString, probabilities):
     return image
 
 
-#no
+# no
 def drawNodeOnImage(results, image):  # 將節點和骨架繪製到影像中
     if results.multi_hand_landmarks:
         for handMarks in results.multi_hand_landmarks:
@@ -54,7 +54,6 @@ def drawNodeOnImage(results, image):  # 將節點和骨架繪製到影像中
                 mpDrawingStyles.get_default_hand_connections_style(),
             )
     return image
-
 
 
 while True:
@@ -70,7 +69,9 @@ while True:
         print("Cannot receive frame")
         break
 
-    predictedResult, probabilities, results = pose_predict_system.imageHandPosePredict(RGBImage)
+    predictedResult, probabilities, results = body_predict_system.imageHandPosePredict(
+        RGBImage
+    )
 
     BGRImage = drawResultOnImage(
         image=BGRImage,
