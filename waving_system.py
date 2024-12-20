@@ -40,13 +40,13 @@ resultsList = [
     "F'",
     "U'",
     "stop",  # 0
-    "F ",
-    "U ",
+    "F",
+    "U",
     "stop",  # 1
-    "L ",
+    "L",
     "L'",
     "stop",  # 2
-    "R ",
+    "R",
     "R' ",
     "Stop",  # 3
     "wait",

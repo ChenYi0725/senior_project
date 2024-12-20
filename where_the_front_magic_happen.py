@@ -33,14 +33,14 @@ hands = mpHandsSolution.Hands(
 )
 
 resultsList = [
-    "F ",
+    "F",
     "F'",
     "L'",
-    "L ",
-    "R ",
+    "L",
+    "R",
     "R'",
     "U'",
-    "U ",
+    "U",
     "Stop",
     "wait",
 ]
