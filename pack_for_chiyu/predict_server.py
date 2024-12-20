@@ -5,14 +5,17 @@ from io import BytesIO
 from PIL import Image
 from PIL import ImageOps
 import color_detection as cd
-import the_ultimate_function
+# import the_ultimate_function
 import time
 import numpy as np
+# import data_organizer as do
+# import recorder as rd 
 import pack_for_chiyu.data_organizer as do
 import pack_for_chiyu.recorder as rd
 import mediapipe as mp
-import keras
+# import keras
 import body_predict_system
+import waving_system
 
 # 我想起來忘記跟你講操作方式
 # 分成 水平 跟 鉛直 兩種移動、左右手(單手)、握拳 張開 共8種動作 + stop
@@ -53,7 +56,7 @@ def rotation(image):
         #     image
         # )
         # predictedResult, probabilities = body_predict_system.imageHandPosePredict(image)
-        predictedResult, probabilities = body_predict_system.imageHandPosePredict(image)
+        predictedResult, probabilities = waving_system.imageHandPosePredict(image)
         print("predictedResult: ", predictedResult, "probabilities: ", probabilities)
         result = {"predictedResult": predictedResult, "probabilities": probabilities}
         socketio.emit("rotation", result)
