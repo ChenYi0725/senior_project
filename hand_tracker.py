@@ -5,15 +5,16 @@ import tools.recorder as rd
 import time
 import os
 
+# 錄製的資料為先左手再右手
 
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
 recorder = rd.Recorder()
-frameReceiver = camera.Camera()
+frameReceiver = camera.Camera(0)  # 0->電腦攝影機，1 -> 手機
 
-rightFeaturePerData = []
-leftFeaturePerData = []
+# rightFeaturePerData = []
+# leftFeaturePerData = []
 featurePerData = []
 continuousFeature = []  # 目前抓到的前面
 featurePerProcess = []  # 這次執行所抓到的資料
@@ -142,7 +143,7 @@ def recordingSign(image):
 # mediapipe 啟用偵測手掌
 with mpHandsSolution.Hands(
     model_complexity=0,
-    max_num_hands=2,
+    max_num_hands=1,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5,
 ) as hands:
@@ -152,13 +153,13 @@ with mpHandsSolution.Hands(
     while True:
         isCatchered, BGRImage = frameReceiver.getBGRImage()
         # BGRImage ->畫面 RGBImage->model
-        RGBImage = frameReceiver.BGRToRGB(BGRImage)
 
         if not isCatchered:
             print("Cannot receive frame")
             break
-
+        RGBImage = frameReceiver.BGRToRGB(BGRImage)
         results = hands.process(RGBImage)  # 偵測手掌
+        results = recorder.customLR(results)
         # if isLRExist(results):
         #     cv2.putText(
         #         BGRImage,
@@ -171,9 +172,10 @@ with mpHandsSolution.Hands(
         #     )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
 
-        if recorder.isRecording and isLRExist(results):
+        if recorder.isRecording:  # and isLRExist(results):
             BGRImage = recordingSign(BGRImage)
-            featurePerData = recorder.recordBothHand(results, featurePerData)
+            # featurePerData = recorder.recordBothHand(results, featurePerData)
+            featurePerData = recorder.recordOneHand(results, featurePerData)
             if recorder.isFinish:
                 featurePerProcess.append(featurePerData)
                 featurePerData = []
@@ -181,7 +183,7 @@ with mpHandsSolution.Hands(
         else:
             pass
 
-        # BGRImage = LRMovement(BGRImage, results)
+        BGRImage = LRMovement(BGRImage, results)
         BGRImage = drawRecordedTime(BGRImage)
         cv2.imshow("hand tracker", BGRImage)
         cv2.setMouseCallback("hand tracker", onMouse)  # 滑鼠事件
@@ -193,9 +195,9 @@ with mpHandsSolution.Hands(
 
 featuresString = str(featurePerProcess)
 # 10 15 10
-with open("result.txt", "w") as f:
+with open("h.txt", "w") as f:
     featuresString = featuresString[1:-1]
     f.write(featuresString)
-
+print("save in result.txt")
 frameReceiver.camera.release()
 cv2.destroyAllWindows()

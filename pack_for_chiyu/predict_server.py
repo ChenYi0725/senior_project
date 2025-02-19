@@ -5,13 +5,35 @@ from io import BytesIO
 from PIL import Image
 from PIL import ImageOps
 import color_detection as cd
-import the_ultimate_function
+# import the_ultimate_function
 import time
 import numpy as np
+# import data_organizer as do
+# import recorder as rd 
 import pack_for_chiyu.data_organizer as do
 import pack_for_chiyu.recorder as rd
 import mediapipe as mp
-import keras
+# import keras
+import body_predict_system
+import waving_system
+
+# 我想起來忘記跟你講操作方式
+# 分成 水平 跟 鉛直 兩種移動、左右手(單手)、握拳 張開 共8種動作 + stop
+# 左手:
+#   握拳:
+#       鉛直: u'
+#       水平: f'
+#   張開:
+#       鉛直: l'
+#       水平: l
+# 右手:
+#   握拳:
+#       鉛直: u
+#       水平: f
+#   張開:
+#       鉛直: r'
+#       水平: r
+    
 
 
 app = Flask(__name__)
@@ -30,9 +52,11 @@ def rotation(image):
         image = Image.open(BytesIO(base64.b64decode(image)))
         image = ImageOps.mirror(image)  # Flip the image horizontally
         image = np.array(image)
-        predictedResult, probabilities = the_ultimate_function.picture_in_result_out(
-            image
-        )
+        # predictedResult, probabilities = the_ultimate_function.picture_in_result_out(
+        #     image
+        # )
+        # predictedResult, probabilities = body_predict_system.imageHandPosePredict(image)
+        predictedResult, probabilities = waving_system.imageHandPosePredict(image)
         print("predictedResult: ", predictedResult, "probabilities: ", probabilities)
         result = {"predictedResult": predictedResult, "probabilities": probabilities}
         socketio.emit("rotation", result)

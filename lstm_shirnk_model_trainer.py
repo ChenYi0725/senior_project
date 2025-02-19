@@ -4,7 +4,7 @@ import tools.data_organizer as do
 from keras import regularizers
 from keras import layers
 import numpy as np
-import tools.model_evaluator as me
+import model_evaluator as me
 
 np.set_printoptions(threshold=np.inf)
 
@@ -30,7 +30,7 @@ labelsMappingList = [
     "Stop",
     "wait",
 ]
-# evaluator = me.ModelEvaluator(labelsMappingList)
+evaluator = me.ModelEvaluator(labelsMappingList)
 
 
 def ctcLossFunction(args):
@@ -41,7 +41,7 @@ def ctcLossFunction(args):
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
     global dataLengthList
     inputList = np.array(inputList)
-    inputList = organizer.preprocessingForShirnkModel(inputList)
+    inputList = organizer.preprocessForShirnkModel(inputList)
     dataLengthList.append(len(inputList))
     return inputList
 
@@ -138,7 +138,7 @@ print("building model")
 model = keras.models.Sequential()
 model.add(
     keras.layers.LSTM(
-        units=256,
+        units=64,
         activation="tanh",
         input_shape=(timeSteps, features),
         kernel_regularizer=regularizers.l2(0.01),
@@ -163,10 +163,10 @@ print("Start Training")
 model.fit(
     data,
     labels,
-    epochs=650,
+    epochs=350,
     batch_size=21,
     verbose=1,
-    # callbacks=[evaluator],
+    callbacks=[evaluator],
 )
 
 # evaluateModel(ctcModel, data, labels, inputLength, labelLength)
@@ -174,5 +174,5 @@ print("save model")
 # 輸出模型
 # exportSavedModelAndTflite(model)
 model.save("lstm_2hand_shirnk_model.keras")
-model.save("lstm_2hand_shirnk_model.h5")
+# model.save("lstm_2hand_shirnk_model.h5")
 print("finish")

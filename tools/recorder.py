@@ -26,6 +26,31 @@ class Recorder:
                 del featurePerData[0]
         return featurePerData
 
+    def recordOneHand(self, results,featurePerData):
+        if self.recordedTimes < self.neededTimes:
+            featurePerFrame = []
+            if results.multi_hand_landmarks:
+                # 僅處理第一隻手的數據
+                handLandmarks = results.multi_hand_landmarks[0]
+
+                if handLandmarks.landmark:
+                    for landmark in handLandmarks.landmark:
+                        featurePerFrame.append(landmark.x)
+                        featurePerFrame.append(landmark.y)
+
+                featurePerData.append(featurePerFrame)
+                self.recordedTimes += 1
+
+        else:
+            self.featurePerData = []
+            self.recordedTimes = 0
+            self.isRecording = False
+            self.isFinish = True
+
+        return featurePerData
+
+
+
     def recordBothHand(self, results, featurePerData):
         if self.recordedTimes < self.neededTimes:
             featurePerFrame = []
@@ -61,6 +86,19 @@ class Recorder:
             self.isFinish = True
 
         return featurePerData
+
+    def customLR(self,results):
+        if results.multi_hand_landmarks and len(results.multi_hand_landmarks) == 2:
+            hands = []
+            for handLandmarks, handed in zip(
+                results.multi_hand_landmarks, results.multi_handedness
+            ):
+                wristX = handLandmarks.landmark[0].x  # 手腕的 X 座標
+                hands.append((wristX, handLandmarks, handed))
+            hands.sort(key=lambda x: x[0])
+            hands[0][2].classification[0].label = "Left"  # 第一隻手（左手）
+            hands[1][2].classification[0].label = "Right"  # 第二隻手（右手）
+        return results
 
     def record2HandPerFrame(self, results):
         featurePerFrame = []

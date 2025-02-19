@@ -4,7 +4,7 @@ import tools.data_organizer as do
 from keras import regularizers
 from keras import layers
 import numpy as np
-import tools.model_evaluator as me
+import model_evaluator as me
 
 np.set_printoptions(threshold=np.inf)
 
@@ -41,7 +41,7 @@ def ctcLossFunction(args):
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
     global dataLengthList
     inputList = np.array(inputList)
-    inputList = organizer.preprocessingData(inputList)
+    inputList = organizer.preprocessData(inputList)
     dataLengthList.append(len(inputList))
     return inputList
 
@@ -156,20 +156,6 @@ lstmLayer = layers.Bidirectional(
 lstmLayer = layers.Dense(output + 1, activation="softmax")(lstmLayer)
 lstmModel = keras.Model(inputs, lstmLayer)
 
-
-# lstmModel = keras.models.Sequential()
-# lstmModel.add(
-#     layers.Bidirectional(
-#         layers.LSTM(
-#             units=256,
-#             activation="tanh",
-#             input_shape=(timeSteps, features),
-#             kernel_regularizer=regularizers.l2(0.01),
-#             return_sequences=True,  # for ctc
-#         )
-#     )
-# )
-# lstmModel.add(layers.Dense(output + 1, activation="softmax"))  # 13 + 1 for ctc blanky
 # ========================= add ctc loss
 yPred = lstmModel.output
 labelsForCTC = layers.Input(name="label", shape=[None], dtype="int32")
@@ -249,27 +235,24 @@ labelLength = np.expand_dims(
     np.array([1] * len(data), dtype=np.int32), -1
 )  # (13000, 1)
 
-# 驗證形狀
-# print("data shape:", data.shape)
-# print("labels shape:", labels.shape)  # 應該要是(13000, 14)
-# print("inputLength shape:", inputLength.shape)
-# print("labelLength shape:", labelLength.shape)
-
 
 # =================
+<<<<<<< HEAD
 ctcModel.fit(  
+=======
+ctcModel.fit( 
+>>>>>>> c840db2b46b823c31be5ec9ac3d9b2212e136ca4
     [data, labels, inputLength, labelLength],
     labels,
     epochs=350,
     batch_size=21,
     verbose=1,
-    callbacks=[evaluator],
+    # callbacks=[evaluator],
 )
 
-# evaluateModel(ctcModel, data, labels, inputLength, labelLength)
 print("save model")
 # 輸出模型
 # exportSavedModelAndTflite(model)
-ctcModel.save("lstm_2hand_model.keras")
-ctcModel.save("lstm_2hand_model.h5")
+ctcModel.save("lstm_ctc_model.keras")
+# ctcModel.save("lstm_ctc_model.h5")
 print("finish")
