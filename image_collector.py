@@ -51,7 +51,7 @@ try:
         if not camera.camera.isOpened():
             print("Cannot open camera")
             exit()
-        isCatchered, BGRImage = camera.getBGRImage()
+        isCatchered, BGRImage = camera.get_BGR_image()
     
         BGRImage = hudOnImage(BGRImage)
         cv2.imshow("Image Collection", BGRImage)

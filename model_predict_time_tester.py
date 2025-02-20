@@ -26,10 +26,10 @@ resultsList = [
     "wait",
 ]
 
-organizer = tools.data_organizer.DataOrganizer()
+organizer = tools.data_organizer.data_organizer()
 
 model  = keras.models.load_model("lstm_index_thumb_model.keras")
-testData = organizer.preprocessForIndexaAndThumbModel(organizer.getDataFromTxt("test"))
+testData = organizer.preprocessForIndexaAndThumbModel(organizer.get_data_from_txt("test"))
 predictData = np.expand_dims(testData[0], axis=0)
 startTime = time.time()
 prediction = model.predict(predictData, verbose=0)
@@ -37,7 +37,7 @@ endTime = time.time()
 print(endTime - startTime)
 
 model2 = keras.models.load_model("the_precious_working_model/lstm_2hand_noCTC_60Features.keras")
-testData2 = organizer.preprocessData(organizer.getDataFromTxt("test"))
+testData2 = organizer.preprocess_data(organizer.get_data_from_txt("test"))
 predictData2 = np.expand_dims(testData2[0], axis=0)
 startTime = time.time()
 prediction = model2.predict(predictData2, verbose=0)

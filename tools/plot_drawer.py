@@ -1,17 +1,17 @@
 import matplotlib.pyplot as plt
 import tools.data_organizer as data_organizer
 
-organizer = data_organizer.DataOrganizer()
+organizer = data_organizer.data_organizer()
 
-data = organizer.getDataFromTxt(
+data = organizer.get_data_from_txt(
     "D:\Python_project\senior_project\\data_set_2hands/back_clockwise_2hands"
 )
-oneData = data[100]
+one_data = data[100]
 
 data_ranges = [(54, 60, "b"), (70, 76, "g"), (62, 68, "r")]
 
 # plt.figure() 應放在循環內，每次迭代創建新的圖表
-for idx, pdata in enumerate(oneData):
+for idx, pdata in enumerate(one_data):
     plt.figure(figsize=(8, 6))
 
     for start, end, color in data_ranges:

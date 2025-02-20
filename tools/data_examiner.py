@@ -1,36 +1,36 @@
 import data_organizer as data_organizer
 
-organizer = data_organizer.DataOrganizer()
+organizer = data_organizer.data_organizer()
 num = 0  # 未達需求的資料集數量
-neededData = 200
+needed_data = 200
 
 
-def checkData(fileLocation):
+def check_data(file_location):
     global num
-    fileName = fileLocation.replace("data_set_2hand\\", "")
-    print(f"{fileName}:", end="")
-    print(organizer.findErrorData(f"{fileLocation}"), end="  ")
+    file_name = file_location.replace("data_set_2hand\\", "")
+    print(f"{file_name}:", end="")
+    print(organizer.find_error_data(f"{file_location}"), end="  ")
     print("len:", end="")
-    if len(organizer.getDataFromTxt(f"{fileLocation}")) >= neededData:
-        print(len(organizer.getDataFromTxt(f"{fileLocation}")), end="")
+    if len(organizer.get_data_from_txt(f"{file_location}")) >= needed_data:
+        print(len(organizer.get_data_from_txt(f"{file_location}")), end="")
         print(" done")
     else:
-        print(len(organizer.getDataFromTxt(f"{fileLocation}")))
+        print(len(organizer.get_data_from_txt(f"{file_location}")))
         num = num + 1
 
 
-def cleanData(fileLocation, errorData):
-    dataset = organizer.getDataFromTxt(f"{fileLocation}")
-    del dataset[errorData]
+def clean_data(file_location, error_data):
+    dataset = organizer.get_data_from_txt(f"{file_location}")
+    del dataset[error_data]
     dataset = str(dataset)
     with open("tools/cleaned_data.txt", "w") as f:
         f.write(dataset)
 
 
 print("start")
-checkData("exhibit_data_set/horizontal")
-checkData("exhibit_data_set\\vertical")
-checkData("exhibit_data_set/stop")
+check_data("exhibit_2way/exhibit_data_set/horizontal")
+check_data("exhibit_2way/exhibit_data_set/vertical")
+check_data("exhibit_2way/exhibit_data_set/stop")
 # checkData("front_view_dataset\\bright_dataset\\F'")
 # checkData("front_view_dataset\\bright_dataset\\F")
 # checkData("front_view_dataset\\bright_dataset\\F'")

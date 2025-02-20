@@ -13,7 +13,7 @@ features = 36
 output = 9
 
 dataLengthList = []
-organizer = do.DataOrganizer()
+organizer = do.data_organizer()
 labelsMappingList = [
     "F ",
     "F'",
@@ -37,7 +37,7 @@ def ctcLossFunction(args):
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
     global dataLengthList
     inputList = np.array(inputList)
-    inputList = organizer.preprocessForShirnkModel(inputList)
+    inputList = organizer.preprocess_for_shirnk_model(inputList)
     dataLengthList.append(len(inputList))
     return inputList
 
@@ -63,15 +63,15 @@ def evaluateModel(model, data, labels, inputLength, labelLength):
 
 # ========================
 print("loading data")
-FData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/F")
-FPData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/F'")
-LPData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/L'")
-LData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/L")
-RData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/R")
-RPData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/R'")
-UPData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/U'")
-UData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/U")
-stopData = organizer.getDataFromTxt("front_view_dataset/bright_dataset/stop")
+FData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/F")
+FPData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/F'")
+LPData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/L'")
+LData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/L")
+RData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/R")
+RPData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/R'")
+UPData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/U'")
+UData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/U")
+stopData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/stop")
 
 # ==========================
 print("init Data")

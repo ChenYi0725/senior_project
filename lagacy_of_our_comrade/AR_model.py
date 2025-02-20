@@ -60,10 +60,10 @@ while True:
     if not frameReceiver.camera.isOpened():
         print("Cannot open camera")
         exit()
-    isCatchered, BGRImage = frameReceiver.getBGRImage()
+    isCatchered, BGRImage = frameReceiver.get_BGR_image()
     # BGRImage -> 畫面， RGBImage -> model
 
-    RGBImage = frameReceiver.BGRToRGB(BGRImage)
+    RGBImage = frameReceiver.BGR_to_RGB(BGRImage)
 
     if not isCatchered:
         print("Cannot receive frame")

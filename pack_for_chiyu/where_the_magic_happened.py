@@ -5,12 +5,12 @@ import tools.recorder as rd
 import numpy as np
 import time
 
-recorder = rd.Recorder()
-organizer = do.DataOrganizer()
+recorder = rd.recorder()
+organizer = do.data_organizer()
 
 
-recorder = rd.Recorder()
-organizer = do.DataOrganizer()
+recorder = rd.recorder()
+organizer = do.data_organizer()
 timeSteps = 21
 # features = 60
 features = 36
@@ -95,7 +95,7 @@ def isHandMoving(results, currentFeature):
 
         for i in range(len(currentFingertips)):
             currentFingertips[i] = currentFingertips[i] - leftWrist[i % 2]
-        currentFingertips = organizer.normalizedOneDimensionList(currentFingertips)
+        currentFingertips = organizer.normalized_one_dimension_list(currentFingertips)
 
         if isHandMoving.lastFingertips:
             for i in range(len(currentFingertips)):
@@ -164,7 +164,7 @@ def predict(continuousFeature):
     predictData = np.expand_dims(continuousFeature, axis=0)  # (1, timeSteps, features)
     # 進行預測
     # predictData = organizer.preprocessingData(predictData)
-    predictData = organizer.preprocessForShirnkModel(predictData)
+    predictData = organizer.preprocess_for_shirnk_model(predictData)
 
     prediction = lstmModel.predict(predictData, verbose=0)  # error
     predictedResult = np.argmax(prediction, axis=1)[0]
@@ -251,7 +251,7 @@ def imageHandPosePredict(RGBImage):  # 重構判斷式
 
     if isBothExist(results):  # 如果有雙手
         imageHandPosePredict.missCounter = 0
-        currentFeature = recorder.record2HandPerFrame(results)
+        currentFeature = recorder.record_2hand_per_frame(results)
         currentTime = time.time()
 
         if imageHandPosePredict.handMovingPassCount == 0:

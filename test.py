@@ -26,7 +26,7 @@ resultsList = [
     "wait",
 ]
 
-organizer = tools.data_organizer.DataOrganizer()
+organizer = tools.data_organizer.data_organizer()
 
 # model  = keras.models.load_model("lstm_index_thumb_model.keras")
 # testData = organizer.preprocessForIndexaAndThumbModel(organizer.getDataFromTxt("test"))
@@ -56,7 +56,7 @@ data = np.array(data)
 for i in range(len(data)):
     predictData = np.expand_dims(data[i], axis=0)
 # predictData = np.expand_dims(predictData, axis=0)  # (1, timeSteps, features)
-    predictData = organizer.preprocessData(predictData)
+    predictData = organizer.preprocess_data(predictData)
     prediction = lstmModel.predict(predictData, verbose=0)  # error
     predictedResult = np.argmax(prediction, axis=1)[0]
     probabilities = prediction[0][predictedResult]

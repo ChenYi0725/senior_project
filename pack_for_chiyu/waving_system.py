@@ -6,12 +6,12 @@ import numpy as np
 import time
 import math
 
-recorder = rd.Recorder()
-organizer = do.DataOrganizer()
+recorder = rd.recorder()
+organizer = do.data_organizer()
 
 
-recorder = rd.Recorder()
-organizer = do.DataOrganizer()
+recorder = rd.recorder()
+organizer = do.data_organizer()
 timeSteps = 21
 # features = 60
 features = 42
@@ -167,7 +167,7 @@ def isHandMoving(results, currentFeature):
         for i in range(len(currentFingertips)):
             currentFingertips[i] = currentFingertips[i] - wrist[i % 2]
 
-        currentFingertips = organizer.normalizedOneDimensionList(currentFingertips)
+        currentFingertips = organizer.normalized_one_dimension_list(currentFingertips)
 
         isHandMoving.previousFingertips.append(currentFingertips)
         if len(isHandMoving.previousFingertips) > maxReserveData:
@@ -237,7 +237,7 @@ def predict(continuousFeature):
     predictData = np.expand_dims(continuousFeature, axis=0)  # (1, timeSteps, features)
     # 進行預測
     # predictData = organizer.preprocessingData(predictData)
-    predictData = organizer.preprocessExhibitData(predictData)
+    predictData = organizer.preprocess_exhibit_data(predictData)
     try:
         prediction = lstmModel.predict(predictData, verbose=0)  # error
         predictedResult = np.argmax(prediction, axis=1)[0]
@@ -333,7 +333,7 @@ def imageHandPosePredict(RGBImage):
 
     if results.multi_hand_landmarks:  # 有手
         imageHandPosePredict.missCounter = 0
-        currentFeature = recorder.record2HandPerFrame(results)
+        currentFeature = recorder.record_2hand_per_frame(results)
         currentTime = time.time()
 
         if imageHandPosePredict.handMovingPassCount == 0:

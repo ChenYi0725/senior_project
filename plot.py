@@ -47,7 +47,7 @@ def draw_plot(total_data):
 
 
 
-organizer = tools.data_organizer.DataOrganizer()
+organizer = tools.data_organizer.data_organizer()
 # data_paths = [
 #     ("frontClockwiseData", "data_set_2hands/front_clockwise_2hands"),
 #     ("frontCounterClockwiseData", "data_set_2hands/front_counter_clockwise_2hands"),
@@ -68,9 +68,9 @@ organizer = tools.data_organizer.DataOrganizer()
 #     data_dict[name] = temp_data
 
 data = organizer
-temp_data = organizer.getDataFromTxt("test")
+temp_data = organizer.get_data_from_txt("test")
 temp_data = np.array(temp_data)
-temp_data = organizer.getAccelerate(temp_data)
+temp_data = organizer.get_accelerate(temp_data)
 draw_plot(temp_data)
 
 # frontClockwiseData = data_dict["frontClockwiseData"]

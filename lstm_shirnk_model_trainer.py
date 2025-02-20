@@ -13,7 +13,7 @@ features = 36
 output = 9
 
 dataLengthList = []
-organizer = do.DataOrganizer()
+organizer = do.data_organizer()
 labelsMappingList = [
     # "B'",
     # "B ",
@@ -41,7 +41,7 @@ def ctcLossFunction(args):
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
     global dataLengthList
     inputList = np.array(inputList)
-    inputList = organizer.preprocessForShirnkModel(inputList)
+    inputList = organizer.preprocess_for_shirnk_model(inputList)
     dataLengthList.append(len(inputList))
     return inputList
 
@@ -73,17 +73,17 @@ print("loading data")
 # )
 # bottomLeftData = organizer.getDataFromTxt("data_set_2hands/bottom_left_2hands")
 # bottomRightData = organizer.getDataFromTxt("data_set_2hands/bottom_right_2hands")
-frontClockwiseData = organizer.getDataFromTxt("data_set_2hands/front_clockwise_2hands")
-frontCounterClockwiseData = organizer.getDataFromTxt(
+frontClockwiseData = organizer.get_data_from_txt("data_set_2hands/front_clockwise_2hands")
+frontCounterClockwiseData = organizer.get_data_from_txt(
     "data_set_2hands/front_counter_clockwise_2hands"
 )
-leftDownData = organizer.getDataFromTxt("data_set_2hands/left_down_2hands")
-leftUpData = organizer.getDataFromTxt("data_set_2hands/left_up_2hands")
-rightDownData = organizer.getDataFromTxt("data_set_2hands/right_down_2hands")
-rightUpData = organizer.getDataFromTxt("data_set_2hands/right_up_2hands")
-topLeftData = organizer.getDataFromTxt("data_set_2hands/top_left_2hands")
-topRightData = organizer.getDataFromTxt("data_set_2hands/top_right_2hands")
-stopData = organizer.getDataFromTxt("data_set_2hands/stop_2hands")
+leftDownData = organizer.get_data_from_txt("data_set_2hands/left_down_2hands")
+leftUpData = organizer.get_data_from_txt("data_set_2hands/left_up_2hands")
+rightDownData = organizer.get_data_from_txt("data_set_2hands/right_down_2hands")
+rightUpData = organizer.get_data_from_txt("data_set_2hands/right_up_2hands")
+topLeftData = organizer.get_data_from_txt("data_set_2hands/top_left_2hands")
+topRightData = organizer.get_data_from_txt("data_set_2hands/top_right_2hands")
+stopData = organizer.get_data_from_txt("data_set_2hands/stop_2hands")
 
 # ==========================
 print("init Data")

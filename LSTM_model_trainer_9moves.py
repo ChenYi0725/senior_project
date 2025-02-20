@@ -13,7 +13,7 @@ features = 60
 output = 9
 
 dataLengthList = []
-organizer = do.DataOrganizer()
+organizer = do.data_organizer()
 labelsMappingList = [
     "F ",
     "F'",
@@ -36,7 +36,7 @@ def ctcLossFunction(args):
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
     global dataLengthList
     inputList = np.array(inputList)
-    inputList = organizer.preprocessData(inputList)
+    inputList = organizer.preprocess_data(inputList)
     dataLengthList.append(len(inputList))
     return inputList
 
@@ -61,17 +61,17 @@ def evaluateModel(model, data, labels, inputLength, labelLength):
 
 # ========================
 print("loading data")
-frontClockwiseData = organizer.getDataFromTxt("data_set_2hands/front_clockwise_2hands")
-frontCounterClockwiseData = organizer.getDataFromTxt(
+frontClockwiseData = organizer.get_data_from_txt("data_set_2hands/front_clockwise_2hands")
+frontCounterClockwiseData = organizer.get_data_from_txt(
     "data_set_2hands/front_counter_clockwise_2hands"
 )
-leftDownData = organizer.getDataFromTxt("data_set_2hands/left_down_2hands")
-leftUpData = organizer.getDataFromTxt("data_set_2hands/left_up_2hands")
-rightDownData = organizer.getDataFromTxt("data_set_2hands/right_down_2hands")
-rightUpData = organizer.getDataFromTxt("data_set_2hands/right_up_2hands")
-topLeftData = organizer.getDataFromTxt("data_set_2hands/top_left_2hands")
-topRightData = organizer.getDataFromTxt("data_set_2hands/top_right_2hands")
-stopData = organizer.getDataFromTxt("data_set_2hands/stop_2hands")
+leftDownData = organizer.get_data_from_txt("data_set_2hands/left_down_2hands")
+leftUpData = organizer.get_data_from_txt("data_set_2hands/left_up_2hands")
+rightDownData = organizer.get_data_from_txt("data_set_2hands/right_down_2hands")
+rightUpData = organizer.get_data_from_txt("data_set_2hands/right_up_2hands")
+topLeftData = organizer.get_data_from_txt("data_set_2hands/top_left_2hands")
+topRightData = organizer.get_data_from_txt("data_set_2hands/top_right_2hands")
+stopData = organizer.get_data_from_txt("data_set_2hands/stop_2hands")
 
 # ==========================
 print("init Data")

@@ -7,8 +7,8 @@ import tools.recorder as rd
 import keras
 import time
 
-recorder = rd.Recorder()
-organizer = do.DataOrganizer()
+recorder = rd.recorder()
+organizer = do.data_organizer()
 timeSteps = 21
 features = 60
 
@@ -55,7 +55,7 @@ def predict(continuousFeature):
 
     # 進行預測
 
-    predictData = organizer.preprocessData(predictData)
+    predictData = organizer.preprocess_data(predictData)
 
     prediction = lstmModel.predict(predictData, verbose=0)
     print(prediction[0][12])
@@ -122,7 +122,7 @@ def isHandMoving(results, currentFeature):  # 檢查finger tips是否被preproce
 
         for i in range(len(currentFingertips)):
             currentFingertips[i] = currentFingertips[i] - leftWrist[i % 2]
-        currentFingertips = organizer.normalizedOneDimensionList(currentFingertips)
+        currentFingertips = organizer.normalized_one_dimension_list(currentFingertips)
         # --
         isHandMoving.previousFingertips.append(currentFingertips)  # 先插入fingertips
         if len(isHandMoving.previousFingertips) > maxReserveData:
@@ -296,13 +296,13 @@ def imageHandPosePredict(RGBImage):
         imageHandPosePredict.startTime = 0  # 用於計算免檢查通行次數
 
     results = hands.process(RGBImage)  # 偵測手掌
-    results = recorder.customLR(results)  # 修改雙手label
+    results = recorder.custom_LR(results)  # 修改雙手label
     predictedResult = waitCode
     probabilities = 0
 
     if isBothExist(results):
         imageHandPosePredict.missCounter = 0
-        currentFeature = recorder.record2HandPerFrame(results)
+        currentFeature = recorder.record_2hand_per_frame(results)
         currentTime = time.time()
 
         if imageHandPosePredict.handMovingPassCount == 0:

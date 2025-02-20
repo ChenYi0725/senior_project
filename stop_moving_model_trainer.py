@@ -10,12 +10,12 @@ from tqdm import tqdm
 
 np.set_printoptions(threshold=np.inf)
 
-timeSteps = 21
+time_steps = 21
 features = 36
 output = 2
 
 dataLengthList = []
-organizer = do.DataOrganizer()
+organizer = do.data_organizer()
 labelsMappingList = [
     "move",
     "Stop",
@@ -30,7 +30,7 @@ def ctcLossFunction(args):
 def initData(inputList):  # inputList.shape = (data numbers, time step, features)
     global dataLengthList
     inputList = np.array(inputList)
-    inputList = organizer.preprocessForShirnkModel(inputList)
+    inputList = organizer.preprocess_for_shirnk_model(inputList)
     dataLengthList.append(len(inputList))
     return inputList
 
@@ -69,7 +69,7 @@ data_paths = [
 ]
 data_dict = {}
 for name, path in tqdm(data_paths, desc="Loading Data"):
-    data_dict[name] = organizer.getDataFromTxt(path)
+    data_dict[name] = organizer.get_data_from_txt(path)
 
 frontClockwiseData = data_dict["frontClockwiseData"]
 frontCounterClockwiseData = data_dict["frontCounterClockwiseData"]
@@ -128,7 +128,7 @@ model.add(
     keras.layers.LSTM(
         units=64,
         activation="tanh",
-        input_shape=(timeSteps, features),
+        input_shape=(time_steps, features),
         kernel_regularizer=regularizers.l2(0.01),
     )
 )

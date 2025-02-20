@@ -12,7 +12,7 @@ class ModelEvaluator(Callback):
     def __init__(self, label):
         print("loading test data for evaluator")
         super(ModelEvaluator, self).__init__()
-        self.organizer = do.DataOrganizer()
+        self.organizer = do.data_organizer()
         self.losses = []
         self.accuracies = []
         self.label = label

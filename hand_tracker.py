@@ -10,7 +10,7 @@ import os
 mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
 mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
 mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
-recorder = rd.Recorder()
+recorder = rd.recorder()
 frameReceiver = camera.Camera(0)  # 0->電腦攝影機，1 -> 手機
 
 # rightFeaturePerData = []
@@ -108,8 +108,8 @@ def putTextOnIndexFinger(image, handLandmarks, text):
 
 def onMouse(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
-        if recorder.isRecording == False:
-            recorder.isRecording = True
+        if recorder.is_recording == False:
+            recorder.is_recording = True
     elif event == cv2.EVENT_RBUTTONDOWN:
         if len(featurePerProcess) > 0:
             del featurePerProcess[-1]
@@ -151,15 +151,15 @@ with mpHandsSolution.Hands(
         print("Cannot open camera")
         exit()
     while True:
-        isCatchered, BGRImage = frameReceiver.getBGRImage()
+        isCatchered, BGRImage = frameReceiver.get_BGR_image()
         # BGRImage ->畫面 RGBImage->model
 
         if not isCatchered:
             print("Cannot receive frame")
             break
-        RGBImage = frameReceiver.BGRToRGB(BGRImage)
+        RGBImage = frameReceiver.BGR_to_RGB(BGRImage)
         results = hands.process(RGBImage)  # 偵測手掌
-        results = recorder.customLR(results)
+        results = recorder.custom_LR(results)
         # if isLRExist(results):
         #     cv2.putText(
         #         BGRImage,
@@ -172,14 +172,14 @@ with mpHandsSolution.Hands(
         #     )
         BGRImage = drawNodeOnImage(results=results, image=BGRImage)
 
-        if recorder.isRecording:  # and isLRExist(results):
+        if recorder.is_recording:  # and isLRExist(results):
             BGRImage = recordingSign(BGRImage)
             # featurePerData = recorder.recordBothHand(results, featurePerData)
-            featurePerData = recorder.recordOneHand(results, featurePerData)
-            if recorder.isFinish:
+            featurePerData = recorder.record_one_hand(results, featurePerData)
+            if recorder.is_finish:
                 featurePerProcess.append(featurePerData)
                 featurePerData = []
-                recorder.isFinish = False
+                recorder.is_finish = False
         else:
             pass
 

@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import tools.data_organizer as data_organizer
 
-organizer = data_organizer.DataOrganizer()
+organizer = data_organizer.data_organizer()
 
-data = organizer.getDataFromTxt(
+data = organizer.get_data_from_txt(
     "D:\Python_project\senior_project\\data_set_2hands/back_clockwise_2hands"
 )
 oneData = data[100]
