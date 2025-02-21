@@ -30,7 +30,7 @@ labelsMappingList = [
     "Stop",
     "wait",
 ]
-evaluator = me.ModelEvaluator(labelsMappingList)
+evaluator = me.Model_Evaluator(labelsMappingList)
 
 
 def ctcLossFunction(args):

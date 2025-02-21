@@ -8,16 +8,16 @@ import seaborn as sns
 from tools import data_organizer as do
 
 
-class ModelEvaluator(Callback):
+class Model_Evaluator(Callback):
     def __init__(self, label):
         print("loading test data for evaluator")
-        super(ModelEvaluator, self).__init__()
+        super(Model_Evaluator, self).__init__()
         self.organizer = do.data_organizer()
         self.losses = []
         self.accuracies = []
         self.label = label
-        self.dataLengthList = []
-        self.xTest, self.yTest = self.createTestData()
+        self.data_length_list = []
+        self.x_test, self.y_test = self.createTestData()
 
     def on_epoch_end(self, epoch, logs={}):
         self.losses.append(logs.get("loss"))
@@ -26,8 +26,8 @@ class ModelEvaluator(Callback):
 
     def on_train_end(self, logs=None):
         self.drawLossFunction()
-        self.drawConfusionMatrix()
-        self.drawAccuracy()
+        self.draw_confusion_matrix()
+        self.draw_accuracy()
 
     def drawLossFunction(self, logs={}):
         # 繪製損失值圖表
@@ -37,16 +37,13 @@ class ModelEvaluator(Callback):
         plt.xlabel("Epoch")
         plt.show()
 
-    def drawConfusionMatrix(self):
-        yPred = self.model.predict(self.testData)
-        yPredClasses = np.argmax(yPred, axis=1)
-<<<<<<< HEAD:tools/model_evaluator.py
-        yTrue = np.argmax(self.testlabel, axis=1)
-=======
-        # yTrue = np.argmax(self.yTest, axis=1)
->>>>>>> c840db2b46b823c31be5ec9ac3d9b2212e136ca4:model_evaluator.py
+    def draw_confusion_matrix(self):
+        y_pred = self.model.predict(self.testData)
+        y_pred_classes = np.argmax(y_pred, axis=1)
 
-        conf_matrix = confusion_matrix(self.yTest, yPredClasses)
+        y_true = np.argmax(self.testlabel, axis=1)
+
+        conf_matrix = confusion_matrix(self.yTest, y_pred_classes)
 
         # 繪製混淆矩陣
         plt.figure(figsize=(6, 6))
@@ -65,7 +62,7 @@ class ModelEvaluator(Callback):
         plt.title("Confusion Matrix")
         plt.show()
 
-    def drawAccuracy(self,logs={}):
+    def draw_accuracy(self,logs={}):
         plt.plot(self.accuracies)
         plt.title("Model accuracy")
         plt.ylabel("Accuracy")
@@ -73,42 +70,42 @@ class ModelEvaluator(Callback):
         plt.show()
 
     # ----------------------------------------------------
-    def initData(
-        self, inputList
+    def init_data(
+        self, input_list
     ):  # inputList.shape = (data numbers, time step, features)
-        inputList = np.array(inputList)
-        self.dataLengthList.append(len(inputList))
-        inputList = self.organizer.preprocessForShirnkModel(inputList)
-        return inputList
+        input_list = np.array(input_list)
+        self.data_length_list.append(len(input_list))
+        input_list = self.organizer.preprocess_for_shirnk_model(input_list)
+        return input_list
 
     def createTestData(self):
         # bp = self.organizer.getDataFromTxt("test_data_set/b'_test")
         # b = self.organizer.getDataFromTxt("test_data_set/b_test")
         # dp = self.organizer.getDataFromTxt("test_data_set/d'_test")
         # d = self.organizer.getDataFromTxt("test_data_set/d_test")
-        f = self.organizer.getDataFromTxt("test_data_set/f_test")
-        fp = self.organizer.getDataFromTxt("test_data_set/f'_test")
-        lp = self.organizer.getDataFromTxt("test_data_set/l'_test")
-        l = self.organizer.getDataFromTxt("test_data_set/l_test")
-        r = self.organizer.getDataFromTxt("test_data_set/r_test")
-        rp = self.organizer.getDataFromTxt("test_data_set/r'_test")
-        u = self.organizer.getDataFromTxt("test_data_set/u_test")
-        up = self.organizer.getDataFromTxt("test_data_set/u'_test")
-        stop = self.organizer.getDataFromTxt("test_data_set/stop_test")
+        f = self.organizer.get_data_from_txt("test_data_set/f_test")
+        fp = self.organizer.get_data_from_txt("test_data_set/f'_test")
+        lp = self.organizer.get_data_from_txt("test_data_set/l'_test")
+        l = self.organizer.get_data_from_txt("test_data_set/l_test")
+        r = self.organizer.get_data_from_txt("test_data_set/r_test")
+        rp = self.organizer.get_data_from_txt("test_data_set/r'_test")
+        u = self.organizer.get_data_from_txt("test_data_set/u_test")
+        up = self.organizer.get_data_from_txt("test_data_set/u'_test")
+        stop = self.organizer.get_data_from_txt("test_data_set/stop_test")
         # ---
         # bp = self.initData(bp)
         # b = self.initData(b)
         # dp = self.initData(dp)
         # d = self.initData(d)
-        f = self.initData(f)
-        fp = self.initData(fp)
-        lp = self.initData(lp)
-        l = self.initData(l)
-        r = self.initData(r)
-        rp = self.initData(rp)
-        u = self.initData(u)
-        up = self.initData(up)
-        stop = self.initData(stop)
+        f = self.init_data(f)
+        fp = self.init_data(fp)
+        lp = self.init_data(lp)
+        l = self.init_data(l)
+        r = self.init_data(r)
+        rp = self.init_data(rp)
+        u = self.init_data(u)
+        up = self.init_data(up)
+        stop = self.init_data(stop)
         # ------
         testData = np.concatenate(
             (

@@ -11,28 +11,28 @@ organizer = do.data_organizer()
 
 recorder = rd.recorder()
 organizer = do.data_organizer()
-timeSteps = 21
+time_steps = 21
 # features = 60
 features = 36
 
-mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
-mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
-mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
+mp_drawing = mp.solutions.drawing_utils  # 繪圖方法
+mp_drawing_styles = mp.solutions.drawing_styles  # 繪圖樣式
+mp_hands_solution = mp.solutions.hands  # 偵測手掌方法
 
-lstmModel = keras.models.load_model(
+lstm_model = keras.models.load_model(
     "front_view_9moves_model.keras",
 )
-showResult = "wait"
-predictFrequence = 1
-predictCount = 0
-hands = mpHandsSolution.Hands(
+show_result = "wait"
+predict_frequence = 1
+predict_count = 0
+hands = mp_hands_solution.Hands(
     model_complexity=0,
     max_num_hands=2,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5,
 )
 
-resultsList = [
+results_list = [
     "F ",
     "F'",
     "L'",
@@ -46,98 +46,98 @@ resultsList = [
 ]
 # stopCode = 12
 # waitCode = 13
-stopCode = 8
-waitCode = 9
-lastResult = waitCode
+stop_code = 8
+wait_code = 9
+last_result = wait_code
 # currentFeature = []  # 目前畫面的資料
-continuousFeature = []  # 目前抓到的前面
-missCounter = 0
-maxMissCounter = 10
+continuous_feature = []  # 目前抓到的前面
+miss_counter = 0
+max_miss_counter = 10
 
 
 
 
-def isHandMoving(results, currentFeature):  # 檢查finger tips是否被preprocessing 影響
-    global continuousFeature
-    if not hasattr(isHandMoving, "lastHandJoints"):
-        isHandMoving.lastHandJoints = []
-    if not hasattr(isHandMoving, "previousFingertips"):
-        isHandMoving.previousFingertips = []
+def is_hand_moving(results, current_feature):  # 檢查finger tips是否被preprocessing 影響
+    global continuous_feature
+    if not hasattr(is_hand_moving, "last_hand_joints"):
+        is_hand_moving.last_hand_joints = []
+    if not hasattr(is_hand_moving, "previous_fingertips"):
+        is_hand_moving.previous_fingertips = []
 
     threshold = [0.09, 0.12]
-    fingertipsNodes = [8, 4] 
-    maxReserveData = 16
-    additionalReserve = 8
-    landMarkAdjustmentX = 1
-    landMarkAdjustmentY = 1
+    fingertips_nodes = [8, 4] 
+    max_reserve_data = 16
+    additional_reserve = 8
+    land_mark_adjustment_x = 1
+    land_mark_adjustment_y = 1
 
-    leftFingertips = []
-    rightFingertips = []
+    left_fingertips = []
+    right_fingertips = []
 
     if results.multi_hand_landmarks:
-        for handLandmarks, handed in zip(
+        for hand_landmarks, handed in zip(
             results.multi_hand_landmarks, results.multi_handedness
         ):
             if handed.classification[0].label == "Left":
-                leftWrist = [
-                    handLandmarks.landmark[0].x*landMarkAdjustmentX,
-                    handLandmarks.landmark[0].y*landMarkAdjustmentY,
+                left_wrist = [
+                    hand_landmarks.landmark[0].x*land_mark_adjustment_x,
+                    hand_landmarks.landmark[0].y*land_mark_adjustment_y,
                 ]
 
-                for i in fingertipsNodes:
-                    leftFingertips.append(handLandmarks.landmark[i].x*landMarkAdjustmentX)
-                    leftFingertips.append(handLandmarks.landmark[i].y*landMarkAdjustmentY)
+                for i in fingertips_nodes:
+                    left_fingertips.append(hand_landmarks.landmark[i].x*land_mark_adjustment_x)
+                    left_fingertips.append(hand_landmarks.landmark[i].y*land_mark_adjustment_y)
             elif handed.classification[0].label == "Right":
 
-                for i in fingertipsNodes:
-                    rightFingertips.append(handLandmarks.landmark[i].x*landMarkAdjustmentX)
-                    rightFingertips.append(handLandmarks.landmark[i].y*landMarkAdjustmentY)
-        currentFingertips = leftFingertips + rightFingertips
+                for i in fingertips_nodes:
+                    right_fingertips.append(hand_landmarks.landmark[i].x*land_mark_adjustment_x)
+                    right_fingertips.append(hand_landmarks.landmark[i].y*land_mark_adjustment_y)
+        current_fingertips = left_fingertips + right_fingertips
 
-        for i in range(len(currentFingertips)):
-            currentFingertips[i] = currentFingertips[i] - leftWrist[i % 2]
-        currentFingertips = organizer.normalized_one_dimension_list(currentFingertips)
+        for i in range(len(current_fingertips)):
+            current_fingertips[i] = current_fingertips[i] - left_wrist[i % 2]
+        current_fingertips = organizer.normalized_one_dimension_list(current_fingertips)
         # --
-        isHandMoving.previousFingertips.append(currentFingertips)  # 先插入fingertips
-        if len(isHandMoving.previousFingertips) > maxReserveData:
-            del isHandMoving.previousFingertips[0]
+        is_hand_moving.previous_fingertips.append(current_fingertips)  # 先插入fingertips
+        if len(is_hand_moving.previous_fingertips) > max_reserve_data:
+            del is_hand_moving.previous_fingertips[0]
 
-        isHandMoving.previousFingertips.append(currentFingertips)
+        is_hand_moving.previous_fingertips.append(current_fingertips)
         # ------------ 這裡重構
-        if len(isHandMoving.previousFingertips) > 2:
-            currentFingertips = isHandMoving.previousFingertips[-1]
+        if len(is_hand_moving.previous_fingertips) > 2:
+            current_fingertips = is_hand_moving.previous_fingertips[-1]
             for i in range(
-                len(isHandMoving.previousFingertips) - 1
+                len(is_hand_moving.previous_fingertips) - 1
             ):  # 不包含最後一個 list
-                for j in range(len(currentFingertips)):
+                for j in range(len(current_fingertips)):
                     diff = abs(
-                        currentFingertips[j] - isHandMoving.previousFingertips[i][j]
+                        current_fingertips[j] - is_hand_moving.previous_fingertips[i][j]
                     )
                     if diff > threshold[j % 2]:
                         print("move")
-                        if i > additionalReserve:
-                            isHandMoving.lastHandJoints = isHandMoving.lastHandJoints[
-                                i - additionalReserve :
+                        if i > additional_reserve:
+                            is_hand_moving.last_hand_joints = is_hand_moving.last_hand_joints[
+                                i - additional_reserve :
                             ]
                         return True
         # ----------------
         # 保留時間步
-        isHandMoving.lastHandJoints.append(currentFeature)
-        if len(isHandMoving.lastHandJoints) > maxReserveData:
-            del isHandMoving.lastHandJoints[0]
+        is_hand_moving.last_hand_joints.append(current_feature)
+        if len(is_hand_moving.last_hand_joints) > max_reserve_data:
+            del is_hand_moving.last_hand_joints[0]
 
     return False
 
 
 # ------------------
-def interpolate_number(returnList):
-    for i in range(len(returnList)):
-        if returnList[i] == None:
+def interpolate_number(return_list):
+    for i in range(len(return_list)):
+        if return_list[i] == None:
             counter = 1
-            while (returnList[i + counter]) == None:
+            while (return_list[i + counter]) == None:
                 counter = counter + 1
-            lastTimeStep = returnList[i + counter]
-            nextTimeStep = returnList[i - 1]
+            lastTimeStep = return_list[i + counter]
+            nextTimeStep = return_list[i - 1]
             length = counter + 1
             while counter > 0:  # 以time step 為單位
                 newTimeStep = []
@@ -146,20 +146,20 @@ def interpolate_number(returnList):
                         (rightValue - leftValue) * counter / length
                     ) + leftValue
                     newTimeStep.append(interpolated_value)
-                returnList[i + counter - 1] = newTimeStep.copy()
+                return_list[i + counter - 1] = newTimeStep.copy()
                 counter -= 1
-    return returnList
+    return return_list
 
 
-def linear_interpolation(targetList):
-    global timeSteps
-    return_list = [None] * (timeSteps - 1)
-    length = len(targetList)
-    return_list[0] = targetList[0]  # head and end
-    return_list[timeSteps - 2] = targetList[-1]
-    for i in range(1, len(targetList) - 1):  # spread the rest of them
-        insert_index = ((i * (timeSteps - 2)) // (length - 1)) + 1
-        return_list[insert_index] = targetList[i]
+def linear_interpolation(target_list):
+    global time_steps
+    return_list = [None] * (time_steps - 1)
+    length = len(target_list)
+    return_list[0] = target_list[0]  # head and end
+    return_list[time_steps - 2] = target_list[-1]
+    for i in range(1, len(target_list) - 1):  # spread the rest of them
+        insert_index = ((i * (time_steps - 2)) // (length - 1)) + 1
+        return_list[insert_index] = target_list[i]
     return_list = interpolate_number(return_list)
     return return_list
 
@@ -167,160 +167,160 @@ def linear_interpolation(targetList):
 # -----------------------
 
 
-def predict(continuousFeature):
-    continuousFeature = np.array(continuousFeature)
-    predictData = np.expand_dims(continuousFeature, axis=0)  # (1, timeSteps, features)
+def predict(continuous_feature):
+    continuous_feature = np.array(continuous_feature)
+    predict_data = np.expand_dims(continuous_feature, axis=0)  # (1, timeSteps, features)
     # 進行預測
     # predictData = organizer.preprocessingData(predictData)
-    predictData = organizer.preprocess_for_shirnk_model(predictData)
+    predict_data = organizer.preprocess_for_shirnk_model(predict_data)
     try:
-        prediction = lstmModel.predict(predictData, verbose=0)  # error
-        predictedResult = np.argmax(prediction, axis=1)[0]
-        probabilities = prediction[0][predictedResult]
+        prediction = lstm_model.predict(predict_data, verbose=0)  # error
+        predicted_result = np.argmax(prediction, axis=1)[0]
+        probabilities = prediction[0][predicted_result]
     except:
-        predictedResult = len(resultsList) - 1
+        predicted_result = len(results_list) - 1
         probabilities = 0.0
 
-    return predictedResult, probabilities
+    return predicted_result, probabilities
 
 
-def blockIllegalResult(probabilities, lastResult, currentResult):
+def block_illegal_result(probabilities, last_result, current_result):
     print(probabilities)
     if probabilities > 0.7:
-        if currentResult in [stopCode, waitCode]:  # stop, wait 不動
-            return currentResult
+        if current_result in [stop_code, wait_code]:  # stop, wait 不動
+            return current_result
 
-        if currentResult == lastResult:  # block same move
-            return waitCode  # wait
+        if current_result == last_result:  # block same move
+            return wait_code  # wait
 
-        if lastResult != stopCode and (lastResult // 2) == (
-            currentResult // 2
+        if last_result != stop_code and (last_result // 2) == (
+            current_result // 2
         ):  # block reverse move
-            return lastResult
+            return last_result
 
-        return currentResult
+        return current_result
     else:
-        return lastResult
+        return last_result
 
 
-def isBothExist(results):
-    isLeft = False
-    isRight = False
+def is_both_exist(results):
+    is_left = False
+    is_right = False
     if results.multi_hand_landmarks:
-        for handLandmarks, handed in zip(
+        for hand_landmarks, handed in zip(
             results.multi_hand_landmarks, results.multi_handedness
         ):
             if handed.classification[0].label == "Left":
-                isLeft = True
+                is_left = True
             elif handed.classification[0].label == "Right":
-                isRight = True
+                is_right = True
 
-    if isLeft and isRight:
+    if is_left and is_right:
         return True
     else:
         return False
 
 
-def combineAndPredict(currentFeature):
-    global continuousFeature
-    global predictCount
-    global predictFrequence
+def combine_and_predict(current_feature):
+    global continuous_feature
+    global predict_count
+    global predict_frequence
 
-    if len(continuousFeature) < 21:
-        continuousFeature.append(currentFeature)
+    if len(continuous_feature) < 21:
+        continuous_feature.append(current_feature)
     else:
-        del continuousFeature[0]
-        continuousFeature.append(currentFeature)
-        continuousFeature_np = np.array(continuousFeature, dtype="float")
-        predictCount = predictCount + 1
-        if showResult != "stop":
-            if predictCount == predictFrequence:
-                predictCount = 0
-                predictedResult, probabilities = predict(continuousFeature_np)
-                continuousFeature = []
-                isHandMoving.lastHandJoints = []
-                isHandMoving.previousFingertips = []
-                return predictedResult, probabilities
+        del continuous_feature[0]
+        continuous_feature.append(current_feature)
+        continuous_feature_np = np.array(continuous_feature, dtype="float")
+        predict_count = predict_count + 1
+        if show_result != "stop":
+            if predict_count == predict_frequence:
+                predict_count = 0
+                predicted_result, probabilities = predict(continuous_feature_np)
+                continuous_feature = []
+                is_hand_moving.last_hand_joints = []
+                is_hand_moving.previous_fingertips = []
+                return predicted_result, probabilities
 
-    return waitCode, 0
+    return wait_code, 0
 
 
-def imageHandPosePredict(RGBImage):
-    global continuousFeature
-    global showResult
-    global predictCount
+def image_hand_pose_predict(RGB_image):
+    global continuous_feature
+    global show_result
+    global predict_count
     global hands
-    global lastResult
+    global last_result
 
     # 初始化靜態變數
-    if not hasattr(imageHandPosePredict, "missCounter"):
-        imageHandPosePredict.missCounter = 0  # 用於計算沒有雙手的次數
-    if not hasattr(imageHandPosePredict, "handMovingPassCount"):
-        imageHandPosePredict.handMovingPassCount = 0  # 用於計算免檢查通行次數
-    if not hasattr(imageHandPosePredict, "startTime"):
-        imageHandPosePredict.startTime = 0  # 用於計算免檢查通行次數
+    if not hasattr(image_hand_pose_predict, "miss_counter"):
+        image_hand_pose_predict.miss_counter = 0  # 用於計算沒有雙手的次數
+    if not hasattr(image_hand_pose_predict, "hand_moving_pass_count"):
+        image_hand_pose_predict.hand_moving_pass_count = 0  # 用於計算免檢查通行次數
+    if not hasattr(image_hand_pose_predict, "start_time"):
+        image_hand_pose_predict.start_time = 0  # 用於計算免檢查通行次數
 
-    results = hands.process(RGBImage)  # 偵測手掌
+    results = hands.process(RGB_image)  # 偵測手掌
     results = recorder.custom_LR(results)    #修改雙手label
-    predictedResult = waitCode
+    predicted_result = wait_code
     probabilities = 0
 
-    if isBothExist(results):  # 如果有雙手
-        imageHandPosePredict.missCounter = 0
-        currentFeature = recorder.record_2hand_per_frame(results)
-        currentTime = time.time()
+    if is_both_exist(results):  # 如果有雙手
+        image_hand_pose_predict.miss_counter = 0
+        current_feature = recorder.record_2hand_per_frame(results)
+        current_time = time.time()
 
-        if imageHandPosePredict.handMovingPassCount == 0:
-            if isHandMoving(results, currentFeature):
-                imageHandPosePredict.startTime = time.time()
-                imageHandPosePredict.handMovingPassCount = timeSteps
-                if len(continuousFeature) == 0:
-                    continuousFeature.extend(isHandMoving.lastHandJoints[::-1])
+        if image_hand_pose_predict.hand_moving_pass_count == 0:
+            if is_hand_moving(results, current_feature):
+                image_hand_pose_predict.start_time = time.time()
+                image_hand_pose_predict.hand_moving_pass_count = time_steps
+                if len(continuous_feature) == 0:
+                    continuous_feature.extend(is_hand_moving.last_hand_joints[::-1])
 
             else:
-                continuousFeature = []
+                continuous_feature = []
 
                 pass
 
         if (
-            len(currentFeature) == 84 and imageHandPosePredict.handMovingPassCount > 0
+            len(current_feature) == 84 and image_hand_pose_predict.hand_moving_pass_count > 0
         ):  # 確認為特徵的數量
-            if (currentTime - imageHandPosePredict.startTime) > 2 and len(
-                continuousFeature
+            if (current_time - image_hand_pose_predict.start_time) > 2 and len(
+                continuous_feature
             ) > 3:
-                continuousFeature = linear_interpolation(
-                    continuousFeature
+                continuous_feature = linear_interpolation(
+                    continuous_feature
                 )  # interpolate to 20 time steps
-            predictedResult, probabilities = combineAndPredict(currentFeature)
-            predictedResult = blockIllegalResult(
-                probabilities, lastResult, predictedResult
+            predicted_result, probabilities = combine_and_predict(current_feature)
+            predicted_result = block_illegal_result(
+                probabilities, last_result, predicted_result
             )
-            if predictedResult not in [waitCode]:
-                resultString = resultsList[predictedResult]
-                print(resultString)
-            imageHandPosePredict.handMovingPassCount = (
-                imageHandPosePredict.handMovingPassCount - 1
+            if predicted_result not in [wait_code]:
+                result_string = results_list[predicted_result]
+                print(result_string)
+            image_hand_pose_predict.hand_moving_pass_count = (
+                image_hand_pose_predict.hand_moving_pass_count - 1
             )
             #     print(resultsList[predictedResult])
             # # if not predictedResult == 13:
             # #     print(resultsList[predictedResult])
 
     else:
-        if imageHandPosePredict.missCounter >= maxMissCounter:
-            continuousFeature = []
-            showResult = "wait"
-            predictCount = 0
-            isHandMoving.lastHandJoints = []
-            isHandMoving.previousFingertips = []
-            imageHandPosePredict.handMovingPassCount = 0
+        if image_hand_pose_predict.miss_counter >= max_miss_counter:
+            continuous_feature = []
+            show_result = "wait"
+            predict_count = 0
+            is_hand_moving.last_hand_joints = []
+            is_hand_moving.previous_fingertips = []
+            image_hand_pose_predict.hand_moving_pass_count = 0
         else:
-            imageHandPosePredict.missCounter += 1
-    resultString = resultsList[predictedResult]
-    return resultString, probabilities, results
+            image_hand_pose_predict.miss_counter += 1
+    result_string = results_list[predicted_result]
+    return result_string, probabilities, results
 
 
-def clearCurrentData():
-    global continuousFeature
-    continuousFeature = []
-    isHandMoving.previousFingertips = []
-    isHandMoving.lastHandJoints = []
+def clear_current_data():
+    global continuous_feature
+    continuous_feature = []
+    is_hand_moving.previous_fingertips = []
+    is_hand_moving.last_hand_joints = []

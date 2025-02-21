@@ -14,43 +14,38 @@ import where_the_front_magic_happen
 
 # from LSTM_2hands_model_trainer import ctcLossFunction
 
-def LRMovement(image, results):
+def LR_movement(image, results):
     if results.multi_hand_landmarks:
         for handLandmarks, handed in zip(
             results.multi_hand_landmarks, results.multi_handedness
         ):
             if handed.classification[0].label == "Left":
-                image = putTextOnIndexFinger(image, handLandmarks, "L")
+                image = put_text_on_index_finger(image, handLandmarks, "L")
             elif handed.classification[0].label == "Right":
-                image = putTextOnIndexFinger(image, handLandmarks, "R")
+                image = put_text_on_index_finger(image, handLandmarks, "R")
     return image
 
 
-def ctcLossFunction(args):
-    yPred, labels, inputLength, labelLength = args
-    return tf.keras.backend.ctc_batch_cost(labels, yPred, inputLength, labelLength)
+frame_receiver = camera.Camera(1)
+mp_drawing = mp.solutions.drawing_utils  # 繪圖方法
+mp_drawing_styles = mp.solutions.drawing_styles  # 繪圖樣式
+mp_hands_solution = mp.solutions.hands  # 偵測手掌方法
 
 
-frameReceiver = camera.Camera(1)
-mpDrawing = mp.solutions.drawing_utils  # 繪圖方法
-mpDrawingStyles = mp.solutions.drawing_styles  # 繪圖樣式
-mpHandsSolution = mp.solutions.hands  # 偵測手掌方法
-
-
-def drawResultOnImage(image, resultString, probabilities):
-    global tempResultKeeper
+def draw_result_on_image(image, result_string, probabilities):
+    global temp_result_keeper
     # textLocationX = image.shape[1] - 620
-    textLocationX = 20
-    if resultString == "wait":
-        resultString = tempResultKeeper
+    text_location_x = 20
+    if result_string == "wait":
+        result_string = temp_result_keeper
     else:
-        tempResultKeeper = resultString
+        temp_result_keeper = result_string
 
     probabilities = str(probabilities)
     cv2.putText(
         image,
-        resultString,
-        (textLocationX, 100),
+        result_string,
+        (text_location_x, 100),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
         (255, 0, 0),
@@ -59,7 +54,7 @@ def drawResultOnImage(image, resultString, probabilities):
     cv2.putText(
         image,
         f"probabilities:{probabilities}",
-        (textLocationX, 150),
+        (text_location_x, 150),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
         (255, 0, 0),
@@ -87,12 +82,12 @@ def drawResultOnImage(image, resultString, probabilities):
     return image
 
 
-def putTextOnIndexFinger(image, handLandmarks, text):
-    if handLandmarks.landmark:
-        for lm in handLandmarks.landmark:
+def put_text_on_index_finger(image, hand_landmarks, text):
+    if hand_landmarks.landmark:
+        for lm in hand_landmarks.landmark:
             if (
                 lm
-                == handLandmarks.landmark[mpHandsSolution.HandLandmark.INDEX_FINGER_TIP]
+                == hand_landmarks.landmark[mp_hands_solution.HandLandmark.INDEX_FINGER_TIP]
             ):
                 ih, iw, ic = image.shape
                 x, y = int(lm.x * iw), int(lm.y * ih)
@@ -108,52 +103,52 @@ def putTextOnIndexFinger(image, handLandmarks, text):
     return image
 
 
-def drawNodeOnImage(results, image):  # 將節點和骨架繪製到影像中
+def draw_node_on_image(results, image):  # 將節點和骨架繪製到影像中
     if results.multi_hand_landmarks:
-        for handMarks in results.multi_hand_landmarks:
-            mpDrawing.draw_landmarks(
+        for hand_marks in results.multi_hand_landmarks:
+            mp_drawing.draw_landmarks(
                 image,
-                handMarks,
-                mpHandsSolution.HAND_CONNECTIONS,
-                mpDrawingStyles.get_default_hand_landmarks_style(),
-                mpDrawingStyles.get_default_hand_connections_style(),
+                hand_marks,
+                mp_hands_solution.HAND_CONNECTIONS,
+                mp_drawing_styles.get_default_hand_landmarks_style(),
+                mp_drawing_styles.get_default_hand_connections_style(),
             )
     return image
 
 
-tempResultKeeper = "wait"
+temp_result_keeper = "wait"
 
 # =======================================================
 
 while True:
-    if not frameReceiver.camera.isOpened():
+    if not frame_receiver.camera.isOpened():
         print("Cannot open camera")
         exit()
-    isCatchered, BGRImage = frameReceiver.get_BGR_image()
+    is_catchered, BGR_image = frame_receiver.get_BGR_image()
     # BGRImage -> 畫面， RGBImage -> model
 
-    RGBImage = frameReceiver.BGR_to_RGB(BGRImage)
+    RGB_image = frame_receiver.BGR_to_RGB(BGR_image)
     
-    if not isCatchered:
+    if not is_catchered:
         print("Cannot receive frame")
         break
 
-    resultString, probabilities, results = (
-        where_the_front_magic_happen.imageHandPosePredict(RGBImage)
+    result_string, probabilities, results = (
+        where_the_front_magic_happen.image_hand_pose_predict(RGB_image)
     )
 
     # resultString, probabilities, results = imageHandPosePredict(RGBImage)
     # noResultImage = BGRImage
-    BGRImage = drawResultOnImage(
-        image=BGRImage,
-        resultString=resultString,
+    BGR_image = draw_result_on_image(
+        image=BGR_image,
+        result_string=result_string,
         probabilities=probabilities,
     )
 
-    BGRImage = drawNodeOnImage(results=results, image=BGRImage)  # 可移除
-    BGRImage = LRMovement(BGRImage, results)  # 可移除
+    BGR_image = draw_node_on_image(results=results, image=BGR_image)  # 可移除
+    BGR_image = LR_movement(BGR_image, results)  # 可移除
 
-    cv2.imshow("pose predict", BGRImage)
+    cv2.imshow("pose predict", BGR_image)
 
     if cv2.waitKey(1) == ord("q"):
         break  # 按下 q 鍵停止
@@ -162,5 +157,5 @@ while True:
         break
 
 
-frameReceiver.camera.release()
+frame_receiver.camera.release()
 cv2.destroyAllWindows()

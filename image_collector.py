@@ -6,13 +6,13 @@ import tools.camera
 camera = tools.camera.Camera()
 
 # 主資料夾
-outputFolder = "collected_images"
-if not os.path.exists(outputFolder):
-    os.makedirs(outputFolder)
+output_folder = "collected_images"
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
 # 每次啟動建立新的資料夾，以時間命名
-sessionFolder = os.path.join(outputFolder, time.strftime("%Y%m%d_%H%M%S"))
-os.makedirs(sessionFolder)
+session_folder = os.path.join(output_folder, time.strftime("%Y%m%d_%H%M%S"))
+os.makedirs(session_folder)
 
 image_counter = 0
 collecting = False
@@ -24,14 +24,14 @@ def collect_images(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         collecting = not collecting  # 切換收集狀態
         if collecting:  #如果重新開始新錄影  
-            recording_folder = os.path.join(sessionFolder, time.strftime("%H%M%S"))
+            recording_folder = os.path.join(session_folder, time.strftime("%H%M%S"))
             os.makedirs(recording_folder)
             image_counter = 0
             print(f"新資料開始，儲存至資料夾：{recording_folder}")
         else:
             print("錄影暫停")
 
-def hudOnImage(image):
+def hud_om_image(image):
     if collecting:
         cv2.circle(
             image,
@@ -51,15 +51,15 @@ try:
         if not camera.camera.isOpened():
             print("Cannot open camera")
             exit()
-        isCatchered, BGRImage = camera.get_BGR_image()
+        is_catchered, BGR_image = camera.get_BGR_image()
     
-        BGRImage = hudOnImage(BGRImage)
-        cv2.imshow("Image Collection", BGRImage)
+        BGR_image = hud_om_image(BGR_image)
+        cv2.imshow("Image Collection", BGR_image)
 
         # 如果開始收集，儲存影像
         if collecting and recording_folder is not None:
             image_filename = os.path.join(recording_folder, f"{image_counter}.jpg")
-            cv2.imwrite(image_filename, BGRImage)
+            cv2.imwrite(image_filename, BGR_image)
             print(f"影像已儲存: {image_filename}")
             image_counter += 1
 

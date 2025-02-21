@@ -8,13 +8,13 @@ import model_evaluator as me
 
 np.set_printoptions(threshold=np.inf)
 
-timeSteps = 21
+time_steps = 21
 features = 20
 output = 9
 
-dataLengthList = []
+data_length_list = []
 organizer = do.data_organizer()
-labelsMappingList = [
+labels_mapping_list = [
     # "B'",
     # "B ",
     # "D'",
@@ -33,22 +33,19 @@ labelsMappingList = [
 # evaluator = me.ModelEvaluator(labelsMappingList)
 
 
-def ctcLossFunction(args):
-    yPred, labels, inputLength, labelLength = args
-    return tf.keras.backend.ctc_batch_cost(labels, yPred, inputLength, labelLength)
 
 
-def initData(inputList):  # inputList.shape = (data numbers, time step, features)
-    global dataLengthList
-    inputList = np.array(inputList)
-    inputList = organizer.preprocessForIndexaAndThumbModel(inputList)
-    dataLengthList.append(len(inputList))
-    return inputList
+def init_data(input_list):  # inputList.shape = (data numbers, time step, features)
+    global data_length_list
+    input_list = np.array(input_list)
+    input_list = organizer.preprocessForIndexaAndThumbModel(input_list)
+    data_length_list.append(len(input_list))
+    return input_list
 
 
 
-def evaluateModel(model, data, labels, inputLength, labelLength):
-    loss = model.evaluate([data, labels, inputLength, labelLength], verbose=1)
+def evaluate_model(model, data, labels, input_length, label_length):
+    loss = model.evaluate([data, labels, input_length, label_length], verbose=1)
     print("loss:", loss)
 
 
@@ -60,17 +57,17 @@ print("loading data")
 # )
 # bottomLeftData = organizer.getDataFromTxt("data_set_2hands/bottom_left_2hands")
 # bottomRightData = organizer.getDataFromTxt("data_set_2hands/bottom_right_2hands")
-frontClockwiseData = organizer.get_data_from_txt("data_set_2hands/front_clockwise_2hands")
-frontCounterClockwiseData = organizer.get_data_from_txt(
+front_clockwise_data = organizer.get_data_from_txt("data_set_2hands/front_clockwise_2hands")
+front_counter_clockwise_data = organizer.get_data_from_txt(
     "data_set_2hands/front_counter_clockwise_2hands"
 )
-leftDownData = organizer.get_data_from_txt("data_set_2hands/left_down_2hands")
-leftUpData = organizer.get_data_from_txt("data_set_2hands/left_up_2hands")
-rightDownData = organizer.get_data_from_txt("data_set_2hands/right_down_2hands")
-rightUpData = organizer.get_data_from_txt("data_set_2hands/right_up_2hands")
-topLeftData = organizer.get_data_from_txt("data_set_2hands/top_left_2hands")
-topRightData = organizer.get_data_from_txt("data_set_2hands/top_right_2hands")
-stopData = organizer.get_data_from_txt("data_set_2hands/stop_2hands")
+left_down_data = organizer.get_data_from_txt("data_set_2hands/left_down_2hands")
+left_up_data = organizer.get_data_from_txt("data_set_2hands/left_up_2hands")
+right_down_data = organizer.get_data_from_txt("data_set_2hands/right_down_2hands")
+right_up_data = organizer.get_data_from_txt("data_set_2hands/right_up_2hands")
+top_left_data = organizer.get_data_from_txt("data_set_2hands/top_left_2hands")
+top_right_data = organizer.get_data_from_txt("data_set_2hands/top_right_2hands")
+stop_data = organizer.get_data_from_txt("data_set_2hands/stop_2hands")
 
 # ==========================
 print("init Data")
@@ -78,15 +75,15 @@ print("init Data")
 # backCounterClockwiseData = initData(backCounterClockwiseData)
 # bottomLeftData = initData(bottomLeftData)
 # bottomRightData = initData(bottomRightData)
-frontClockwiseData = initData(frontClockwiseData)
-frontCounterClockwiseData = initData(frontCounterClockwiseData)
-leftDownData = initData(leftDownData)
-leftUpData = initData(leftUpData)
-rightDownData = initData(rightDownData)
-rightUpData = initData(rightUpData)
-topLeftData = initData(topLeftData)
-topRightData = initData(topRightData)
-stopData = initData(stopData)
+front_clockwise_data = init_data(front_clockwise_data)
+front_counter_clockwise_data = init_data(front_counter_clockwise_data)
+left_down_data = init_data(left_down_data)
+left_up_data = init_data(left_up_data)
+right_down_data = init_data(right_down_data)
+right_up_data = init_data(right_up_data)
+top_left_data = init_data(top_left_data)
+top_right_data = init_data(top_right_data)
+stop_data = init_data(stop_data)
 # =====================
 
 
@@ -96,15 +93,15 @@ data = np.concatenate(
         # backCounterClockwiseData,
         # bottomLeftData,
         # bottomRightData,
-        frontClockwiseData,
-        frontCounterClockwiseData,
-        leftDownData,
-        leftUpData,
-        rightDownData,
-        rightUpData,
-        topLeftData,
-        topRightData,
-        stopData,
+        front_clockwise_data,
+        front_counter_clockwise_data,
+        left_down_data,
+        left_up_data,
+        right_down_data,
+        right_up_data,
+        top_left_data,
+        top_right_data,
+        stop_data,
     ),
     axis=0,
 )
@@ -114,12 +111,12 @@ print(f"training data shape:{data.shape}")
 print(f"data len:{len(data)}")
 # =========================訓練集label 0 開始
 labels = np.zeros(len(data), dtype=np.int32)  # total
-labelsPointer = 0
-labelsValue = 0
-for i in dataLengthList:
-    labels[labelsPointer : labelsPointer + i] = labelsValue
-    labelsPointer = labelsPointer + i
-    labelsValue = labelsValue + 1
+labels_pointer = 0
+labels_value = 0
+for i in data_length_list:
+    labels[labels_pointer : labels_pointer + i] = labels_value
+    labels_pointer = labels_pointer + i
+    labels_value = labels_value + 1
 # =========================
 print("building model")
 model = keras.models.Sequential()
@@ -127,7 +124,7 @@ model.add(
     keras.layers.LSTM(
         units=64,
         activation="tanh",
-        input_shape=(timeSteps, features),
+        input_shape=(time_steps, features),
         kernel_regularizer=regularizers.l2(0.01),
     )
 )

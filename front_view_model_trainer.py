@@ -8,13 +8,13 @@ import model_evaluator as me
 
 np.set_printoptions(threshold=np.inf)
 
-timeSteps = 21
+time_steps = 21
 features = 36
 output = 9
 
-dataLengthList = []
+data_length_list = []
 organizer = do.data_organizer()
-labelsMappingList = [
+labels_mapping_list = [
     "F ",
     "F'",
     "L'",
@@ -29,20 +29,20 @@ labelsMappingList = [
 
 
 
-def ctcLossFunction(args):
-    yPred, labels, inputLength, labelLength = args
-    return tf.keras.backend.ctc_batch_cost(labels, yPred, inputLength, labelLength)
+def ctc_loss_function(args):
+    y_pred, labels, input_length, label_length = args
+    return tf.keras.backend.ctc_batch_cost(labels, y_pred, input_length, label_length)
 
 
-def initData(inputList):  # inputList.shape = (data numbers, time step, features)
-    global dataLengthList
-    inputList = np.array(inputList)
-    inputList = organizer.preprocess_for_shirnk_model(inputList)
-    dataLengthList.append(len(inputList))
-    return inputList
+def init_data(input_list):  # inputList.shape = (data numbers, time step, features)
+    global data_length_list
+    input_list = np.array(input_list)
+    input_list = organizer.preprocess_for_shirnk_model(input_list)
+    data_length_list.append(len(input_list))
+    return input_list
 
 
-def exportSavedModelAndTflite(model):
+def export_saved_model_and_tflite(model):
     model.export(filepath="lstm_2hand_saved_model", format="tf_saved_model")
     converter = tf.lite.TFLiteConverter.from_saved_model("lstm_2hand_saved_model")
     converter.experimental_enable_resource_variables = True
@@ -56,40 +56,40 @@ def exportSavedModelAndTflite(model):
         f.write(tflite_model)
 
 
-def evaluateModel(model, data, labels, inputLength, labelLength):
-    loss = model.evaluate([data, labels, inputLength, labelLength], verbose=1)
+def evaluate_model(model, data, labels, input_length, label_length):
+    loss = model.evaluate([data, labels, input_length, label_length], verbose=1)
     print("loss:", loss)
 
 
 # ========================
 print("loading data")
-FData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/F")
-FPData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/F'")
-LPData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/L'")
-LData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/L")
-RData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/R")
-RPData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/R'")
-UPData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/U'")
-UData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/U")
-stopData = organizer.get_data_from_txt("front_view_dataset/bright_dataset/stop")
+f_data = organizer.get_data_from_txt("front_view_dataset/bright_dataset/F")
+fp_data = organizer.get_data_from_txt("front_view_dataset/bright_dataset/F'")
+lp_data = organizer.get_data_from_txt("front_view_dataset/bright_dataset/L'")
+l_data = organizer.get_data_from_txt("front_view_dataset/bright_dataset/L")
+r_data = organizer.get_data_from_txt("front_view_dataset/bright_dataset/R")
+rp_data = organizer.get_data_from_txt("front_view_dataset/bright_dataset/R'")
+up_data = organizer.get_data_from_txt("front_view_dataset/bright_dataset/U'")
+u_data = organizer.get_data_from_txt("front_view_dataset/bright_dataset/U")
+stop_data = organizer.get_data_from_txt("front_view_dataset/bright_dataset/stop")
 
 # ==========================
 print("init Data")
 
-FData = initData(FData)
-FPData = initData(FPData)
-LPData = initData(LPData)
-LData = initData(LData)
-RData = initData(RData)
-RPData = initData(RPData)
-UPData = initData(UPData)
-UData = initData(UData)
-stopData = initData(stopData)
+f_data = init_data(f_data)
+fp_data = init_data(fp_data)
+lp_data = init_data(lp_data)
+l_data = init_data(l_data)
+r_data = init_data(r_data)
+rp_data = init_data(rp_data)
+up_data = init_data(up_data)
+u_data = init_data(u_data)
+stop_data = init_data(stop_data)
 # =====================
 
 
 data = np.concatenate(
-    (FData, FPData, LPData, LData, RData, RPData, UPData, UData,stopData),
+    (f_data, fp_data, lp_data, l_data, r_data, rp_data, up_data, u_data,stop_data),
     axis=0,
 )
 
@@ -98,12 +98,12 @@ print(f"training data shape:{data.shape}")
 print(f"data len:{len(data)}")
 # =========================訓練集label 0 開始
 labels = np.zeros(len(data), dtype=np.int32)  # total
-labelsPointer = 0
-labelsValue = 0
-for i in dataLengthList:
-    labels[labelsPointer : labelsPointer + i] = labelsValue
-    labelsPointer = labelsPointer + i
-    labelsValue = labelsValue + 1
+labels_pointer = 0
+labels_value = 0
+for i in data_length_list:
+    labels[labels_pointer : labels_pointer + i] = labels_value
+    labels_pointer = labels_pointer + i
+    labels_value = labels_value + 1
 # =========================
 print("building model")
 model = keras.models.Sequential()
@@ -111,7 +111,7 @@ model.add(
     keras.layers.LSTM(
         units=16,
         activation="tanh",
-        input_shape=(timeSteps, features),
+        input_shape=(time_steps, features),
         kernel_regularizer=regularizers.l2(0.01),
     )
 )
